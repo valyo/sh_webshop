@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Säsonger - SH Portal{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Säsonger</h1>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newSeasonModal">
+                    <i class="bi bi-plus-lg"></i> Ny säsong
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>År</th>
+                                    <th>Status</th>
+                                    <th>Åtgärder</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for season in seasons %}
+                                <tr>
+                                    <td>{{ season.year }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Aktiv</span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Visa
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i> Redigera
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Season Modal -->
+    <div class="modal fade" id="newSeasonModal" tabindex="-1" aria-labelledby="newSeasonModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newSeasonModalLabel">Ny säsong</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('main.create_season') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="year" class="form-label">År</label>
+                            <input type="text" class="form-control" id="year" name="year" required>
+                            <div class="form-text">Ange året för den nya säsongen (t.ex. 2024)</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                        <button type="submit" class="btn btn-primary">Skapa säsong</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

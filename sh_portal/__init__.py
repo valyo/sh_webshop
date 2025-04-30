@@ -42,6 +42,13 @@ def create_app():
         db.create_all()
         print('Database tables created successfully!')
 
+    # Import flask commands - all
+    from sh_portal.commands import (
+        create_new_admin
+    )
+    # Add flask commands - general
+    app.cli.add_command(create_new_admin)
+
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     from sh_portal.routes import main
     app.register_blueprint(main)

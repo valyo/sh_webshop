@@ -49,4 +49,15 @@ h1 {
 
 .bi-github {
     margin-right: 8px;
+}
+
+/* Custom alert styles */
+.alert-error {
+    background-color: #fff0f3;
+    border-color: #ffd6e0;
+    color: #c81e50;
+}
+
+.alert-error .btn-close {
+    color: #c81e50;
 } 

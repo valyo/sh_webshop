@@ -15,7 +15,15 @@ def get_oauth():
 @main.route('/')
 def home():
     current_app.logger.info(f"Session: {session.get('user')}")
-    return render_template('home.html', user=session.get('user'))
+    just_logged_in = session.pop('just_logged_in', False)
+
+    # Get the latest season
+    latest_season = Season.query.order_by(Season.year.desc()).first()
+
+    return render_template('home.html',
+                         user=session.get('user'),
+                         just_logged_in=just_logged_in,
+                         latest_season=latest_season)
 
 @main.route('/login')
 def login():
@@ -50,6 +58,7 @@ def callback():
         'avatar_url': user_info.get('avatar_url', ''),
         'id': user_info['id']
         }
+        session['just_logged_in'] = True
         current_app.logger.info(f"User info: {user_info}")
         return redirect(url_for('main.home'))
 

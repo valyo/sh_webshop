@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request, current_app
 from requests_oauthlib import OAuth2Session
 import os
-
+from .models import Admin
 main = Blueprint('main', __name__)
 
 def get_oauth():
@@ -36,16 +36,21 @@ def callback():
     resp = oauth.get(current_app.config['GITHUB_API_URL'])
     user_info = resp.json()
 
-    # Store user info in session
-    session['user'] = {
+    # Check if user already exists in database
+    existing_user = Admin.query.filter_by(github_id=user_info['id']).first()
+    #if not, redirect to login page
+    if not existing_user:
+        return render_template('home.html', message=f"Hello Sulyoipulyo, you've nothing to do here!")
+    else:
+        # Store user info in session
+        session['user'] = {
         'username': user_info['login'],  # GitHub username is in the 'login' field
         'name': user_info.get('name', ''),
         'avatar_url': user_info.get('avatar_url', ''),
         'id': user_info['id']
-    }
-
-    current_app.logger.info(f"User info: {user_info}")
-    return redirect(url_for('main.home'))
+        }
+        current_app.logger.info(f"User info: {user_info}")
+        return redirect(url_for('main.home'))
 
 @main.route('/logout')
 def logout():

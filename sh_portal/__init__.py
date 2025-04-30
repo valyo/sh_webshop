@@ -9,6 +9,9 @@ load_dotenv()
 
 db = SQLAlchemy()
 
+# Import models
+from .models import Season, Admin
+
 # GitHub OAuth settings
 GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
 GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
@@ -31,9 +34,16 @@ def create_app():
     app.config['GITHUB_TOKEN_URL'] = GITHUB_TOKEN_URL
     app.config['GITHUB_API_URL'] = GITHUB_API_URL
 
+    # Initialize database
     db.init_app(app)
+
+    # Create database tables
+    with app.app_context():
+        db.create_all()
+        print('Database tables created successfully!')
+
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     from sh_portal.routes import main
     app.register_blueprint(main)
 
-    return app 
+    return app

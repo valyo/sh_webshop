@@ -20,4 +20,33 @@ h1 {
 .lead {
     color: #666;
     font-size: 1.2rem;
+}
+
+/* GitHub OAuth specific styles */
+.btn-primary {
+    background-color: #2ea44f;
+    border-color: #2ea44f;
+}
+
+.btn-primary:hover {
+    background-color: #2c974b;
+    border-color: #2c974b;
+}
+
+.nav-item img.rounded-circle {
+    margin-right: 8px;
+}
+
+.dropdown-menu {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    border: none;
+    border-radius: 8px;
+}
+
+.bi-github {
+    margin-right: 8px;
 } 

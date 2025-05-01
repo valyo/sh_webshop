@@ -50,7 +50,12 @@ def create_app():
     app.cli.add_command(create_new_admin)
 
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-    from sh_portal.routes import main
+
+    # Register blueprints
+    from sh_portal.home import main
+    from sh_portal.seasons import seasons
+
     app.register_blueprint(main)
+    app.register_blueprint(seasons)
 
     return app

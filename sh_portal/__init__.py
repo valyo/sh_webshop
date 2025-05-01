@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth2Session
 
@@ -8,6 +9,7 @@ from requests_oauthlib import OAuth2Session
 load_dotenv()
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 # Import models
 from .models import Season, Admin
@@ -34,8 +36,9 @@ def create_app():
     app.config['GITHUB_TOKEN_URL'] = GITHUB_TOKEN_URL
     app.config['GITHUB_API_URL'] = GITHUB_API_URL
 
-    # Initialize database
+    # Initialize database and migrations
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Create database tables
     with app.app_context():

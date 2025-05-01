@@ -9,18 +9,44 @@
             <h1>Andelsbiodling</h1>
         </div>
         
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>Välj säsong</h2>
+                <form method="POST" class="row align-items-end">
+                    <div class="col-md-4">
+                        <label for="season_id" class="form-label">Säsong</label>
+                        <select class="form-select" id="season_id" name="season_id" onchange="this.form.submit()">
+                            {% for season in seasons %}
+                                <option value="{{ season.id }}" {% if selected_season and selected_season.id == season.id %}selected{% endif %}>
+                                    {{ season.year }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if selected_season %}
         <div class="card">
             <div class="card-body">
-                <h2>Här kan du hantera information om biodlingen</h2>
-                <p class="lead">Something.</p>
+                <h2>Andelsbiodling {{ selected_season.year }}</h2>
+                <p class="lead">Information för säsong {{ selected_season.year }}</p>
                 
-                <!-- Add your content here -->
+                <!-- Add your season-specific content here -->
                 <div class="mt-4">
                     <h3>Översikt</h3>
-                    <p>Information om biodlingen kommer att visas här.</p>
+                    <p>Information om biodlingen för säsong {{ selected_season.year }} kommer att visas här.</p>
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted">Ingen säsong vald eller tillgänglig.</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

@@ -21,7 +21,10 @@ def import_bookings_from_sheet(
         flash('No data to import.', 'error')
         return False
 
-    # Default column order
+    # Check if the first row is a header (contains 'timestamp' or 'Timestamp')
+    if sheet_data and sheet_data[0][0].lower() in ('timestamp', 'tid', 'date'):
+        sheet_data = sheet_data[1:]  # Skip header row
+
     columns = [
         'timestamp', 'email', 'name', 'telephone',
         'address', 'postnummer', 'ort', 'message', 'number'
@@ -33,15 +36,13 @@ def import_bookings_from_sheet(
 
     imported_count = 0
     for _, row in df.iterrows():
-        # Parse timestamp
         try:
             timestamp_obj = datetime.strptime(row['timestamp'], '%m/%d/%Y %H:%M:%S')
         except Exception as e:
             current_app.logger.error(f"Error parsing timestamp: {str(e)}")
-            flash(f'Invalid timestamp format for booking: {row["email"]}', 'error')
+            flash(f'Error parsing timestamp for booking: {row["email"]}', 'error')
             continue
 
-        # Check for existing booking
         existing_booking = BookingsModel.query.filter_by(
             email=row['email'],
             season_id=season_id
@@ -65,7 +66,7 @@ def import_bookings_from_sheet(
 
     try:
         db.session.commit()
-        flash(f'{imported_count} bookings have been imported successfully!', 'success')
+        flash(f'{imported_count} bookings imported successfully!', 'success')
         return True
     except Exception as e:
         db.session.rollback()

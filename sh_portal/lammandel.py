@@ -62,7 +62,11 @@ def index():
     elif seasons:
         selected_season = seasons[0]
 
-    return render_template('lammandel.html',
-                         user=session.get('user'),
-                         seasons=seasons,
-                         selected_season=selected_season) 
+    return render_template(
+        'bookings_base.html',
+        user=session.get('user'),
+        seasons=seasons,
+        selected_season=selected_season,
+        page_title="Lammandel",
+        import_url=url_for('lammandel.import_bookings')
+    ) 

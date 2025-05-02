@@ -84,19 +84,20 @@ def index():
     if not session.get('user'):
         return redirect(url_for('main.home'))
     
-    # Get all seasons ordered by year
     seasons = Season.query.order_by(Season.year.desc()).all()
-
-    # Get selected season (either from form submission or most recent)
     selected_season_id = request.form.get('season_id')
     selected_season = None
 
     if selected_season_id:
         selected_season = Season.query.get(selected_season_id)
     elif seasons:
-        selected_season = seasons[0]  # Default to most recent season
+        selected_season = seasons[0]
 
-    return render_template('andelsbiodling.html',
-                         user=session.get('user'),
-                         seasons=seasons,
-                         selected_season=selected_season)
+    return render_template(
+        'bookings_base.html',
+        user=session.get('user'),
+        seasons=seasons,
+        selected_season=selected_season,
+        page_title="Andelsbiodling",
+        import_url=url_for('andelsbiodling.import_bookings')
+    )

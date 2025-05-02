@@ -6,6 +6,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import pandas as pd
 from datetime import datetime
+import re
 
 andelsbiodling = Blueprint('andelsbiodling', __name__)
 
@@ -20,7 +21,7 @@ def get_sheet_data(sheet_id, range_name):
             'sh-web-portal-f370fff1378a.json',  # You'll need to create this
             scopes=SCOPES
         )
-
+        current_app.logger.info(f"Credentials: {type(credentials)}")
         service = build('sheets', 'v4', credentials=credentials)
         sheet = service.spreadsheets()
         result = sheet.values().get(
@@ -33,24 +34,31 @@ def get_sheet_data(sheet_id, range_name):
         current_app.logger.error(f"Error fetching sheet data: {str(e)}")
         return None
 
+def extract_sheet_id(sheet_link):
+    """
+    Extracts the Google Sheet ID from a full URL or returns the input if it's already an ID.
+    """
+    match = re.search(r'/d/([a-zA-Z0-9-_]+)', sheet_link)
+    if match:
+        return match.group(1)
+    return sheet_link  # fallback: assume it's already an ID
+
 @andelsbiodling.route('/andelsbiodling/import-bookings', methods=['POST'])
 def import_bookings():
     if not session.get('user'):
         return redirect(url_for('main.home'))
 
     try:
-        # Get the selected season
         season_id = request.form.get('season_id')
-        if not season_id:
-            flash('Ingen säsong vald.', 'error')
+        sheet_link = request.form.get('sheet_link')
+        range_name = request.form.get('range_name', 'Sheet1!A2:K')
+        if not season_id or not sheet_link or not range_name:
+            flash('Säsong, Google Sheet-länk och range krävs.', 'error')
             return redirect(url_for('andelsbiodling.index'))
 
-        # Google Sheet ID and range
-        SHEET_ID = current_app.config['GOOGLE_SHEET_ID']  # Add this to your config
-        RANGE_NAME = 'import!A2:I'  # Adjust based on your sheet structure
+        sheet_id = extract_sheet_id(sheet_link)
 
-        # Fetch data from Google Sheet
-        data = get_sheet_data(SHEET_ID, RANGE_NAME)
+        data = get_sheet_data(sheet_id, range_name)
         if not data:
             flash('Kunde inte hämta data från Google Sheet.', 'error')
             return redirect(url_for('andelsbiodling.index'))

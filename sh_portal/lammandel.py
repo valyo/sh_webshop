@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request, flash, current_app
-from .models import Season
+from .models import Season, BookingsLamm
 from . import db
 import re
 

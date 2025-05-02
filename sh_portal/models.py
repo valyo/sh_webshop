@@ -41,3 +41,25 @@ class Bookings(db.Model):
     def __repr__(self):
         return f'<Bookings {self.name} - {self.season.year}>'
 
+
+class BookingsLamm(db.Model):
+    __tablename__ = 'bookings_lamm'
+
+    id = db.Column(db.Integer, primary_key=True)
+    season_id = db.Column(db.Integer, db.ForeignKey('season.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    email = db.Column(db.String(150), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    telephone = db.Column(db.String(50), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    postnummer = db.Column(db.String(10), nullable=False)
+    ort = db.Column(db.String(100), nullable=False)
+    message = db.Column(db.Text)
+    number = db.Column(db.Integer, nullable=False)
+
+    # Relationship with Season
+    season = db.relationship('Season', backref=db.backref('bookings_lamm', lazy=True))
+
+    def __repr__(self):
+        return f'<BookingsLamm {self.name} - {self.season.year}>'
+

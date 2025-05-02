@@ -47,6 +47,7 @@ def callback():
 
     # Check if user already exists in database
     existing_user = Admin.query.filter_by(github_id=user_info['id']).first()
+
     #if not, redirect to login page
     if not existing_user:
         return render_template('home.html', message=f"Hello Sulyoipulyo, you've nothing to do here!")

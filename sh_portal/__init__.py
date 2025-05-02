@@ -21,6 +21,11 @@ GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
 GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
 GITHUB_API_URL = 'https://api.github.com/user'
 
+SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets.readonly',
+    'https://www.googleapis.com/auth/drive.readonly'
+]
+
 def create_app():
     app = Flask(__name__)
 
@@ -35,6 +40,7 @@ def create_app():
     app.config['GITHUB_AUTHORIZE_URL'] = GITHUB_AUTHORIZE_URL
     app.config['GITHUB_TOKEN_URL'] = GITHUB_TOKEN_URL
     app.config['GITHUB_API_URL'] = GITHUB_API_URL
+    app.config['GOOGLE_SHEET_ID'] = os.getenv('GOOGLE_SHEET_ID')
 
     # Initialize database and migrations
     db.init_app(app)

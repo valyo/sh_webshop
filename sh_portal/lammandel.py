@@ -40,13 +40,13 @@ def import_bookings():
             season_id=season_id,
             sheet_data=data
         )
-        return redirect(url_for('lammandel.index'))
+        return redirect(url_for('lammandel.index', season_id=season_id))
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error importing bookings: {str(e)}")
         flash('An error occurred while importing bookings.', 'error')
 
-    return redirect(url_for('lammandel.index'))
+    return redirect(url_for('lammandel.index', season_id=season_id))
 
 @lammandel.route('/lammandel', methods=['GET', 'POST'])
 def index():
@@ -54,7 +54,10 @@ def index():
         return redirect(url_for('main.home'))
     
     seasons = Season.query.order_by(Season.year.desc()).all()
-    selected_season_id = request.form.get('season_id')
+    selected_season_id = (
+        request.form.get('season_id') or
+        request.args.get('season_id')
+    )
     selected_season = None
 
     if selected_season_id:

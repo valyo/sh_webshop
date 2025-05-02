@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 import pandas as pd
 from datetime import datetime
 import re
+from .utils import import_bookings_from_sheet
 
 andelsbiodling = Blueprint('andelsbiodling', __name__)
 
@@ -51,64 +52,30 @@ def import_bookings():
     try:
         season_id = request.form.get('season_id')
         sheet_link = request.form.get('sheet_link')
-        range_name = request.form.get('range_name', 'Sheet1!A2:K')
+        range_name = request.form.get('range_name', 'Form Responses 1!A2:I')
         if not season_id or not sheet_link or not range_name:
-            flash('Säsong, Google Sheet-länk och range krävs.', 'error')
+            flash('Season, Google Sheet link and range are required.', 'error')
             return redirect(url_for('andelsbiodling.index'))
 
         sheet_id = extract_sheet_id(sheet_link)
 
         data = get_sheet_data(sheet_id, range_name)
         if not data:
-            flash('Kunde inte hämta data från Google Sheet.', 'error')
+            flash('Could not fetch data from Google Sheet.', 'error')
             return redirect(url_for('andelsbiodling.index'))
 
-        # Convert to DataFrame for easier handling
-        df = pd.DataFrame(data, columns=[
-            'timestamp', 'email', 'name', 'telephone', 
-            'address', 'postnummer', 'ort', 'message', 'number'
-        ])
-
-        # Process each row
-        for _, row in df.iterrows():
-            # Convert timestamp from "11/26/2024 16:12:32" to datetime object
-            try:
-                timestamp_obj = datetime.strptime(row['timestamp'], '%m/%d/%Y %H:%M:%S')
-                # No need to convert to string, use the datetime object directly
-            except ValueError as e:
-                current_app.logger.error(f"Error parsing timestamp: {str(e)}")
-                flash(f'Fel format på timestamp för bokning: {row["email"]}', 'error')
-                continue
-
-            # Check if booking already exists
-            existing_booking = Bookings.query.filter_by(
-                email=row['email'],
-                season_id=season_id
-            ).first()
-
-            if not existing_booking:
-                # Create new booking using the datetime object
-                booking = Bookings(
-                    season_id=season_id,
-                    timestamp=timestamp_obj,  # Use the datetime object directly
-                    email=row['email'],
-                    name=row['name'],
-                    telephone=row['telephone'],
-                    address=row['address'],
-                    postnummer=row['postnummer'],
-                    ort=row['ort'],
-                    message=row['message'],
-                    number=int(row['number'])
-                )
-                db.session.add(booking)
-
-        db.session.commit()
-        flash('Bokningar har importerats framgångsrikt!', 'success')
+        success = import_bookings_from_sheet(
+            db=db,
+            BookingsModel=Bookings,
+            season_id=season_id,
+            sheet_data=data
+        )
+        return redirect(url_for('andelsbiodling.index'))
 
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error importing bookings: {str(e)}")
-        flash('Ett fel uppstod vid import av bokningar.', 'error')
+        flash('An error occurred while importing bookings.', 'error')
 
     return redirect(url_for('andelsbiodling.index'))
 

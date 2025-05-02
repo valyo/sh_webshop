@@ -32,7 +32,7 @@
             <div class="card-body">
                 <h2>Andelsbiodling {{ selected_season.year }}</h2>
                 <div class="d-flex justify-content-between align-items-center">
-                    <p class="lead">Information för säsong {{ selected_season.year }}</p>
+                    <p class="lead">Information for season {{ selected_season.year }}</p>
                     <!-- Button to open modal -->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
                         <i class="bi bi-cloud-download"></i> Import bookings from Google Sheet
@@ -64,7 +64,7 @@
                   </div>
                   <div class="mb-3">
                     <label for="range_name" class="form-label">Range (e.g. Sheet1!A2:K)</label>
-                    <input type="text" class="form-control" id="range_name" name="range_name" value="Sheet1!A2:K" required>
+                    <input type="text" class="form-control" id="range_name" name="range_name" value="Form Responses 1!A2:I" required>
                     <div class="form-text">Specify the cell range to import.</div>
                   </div>
                 </div>
@@ -76,6 +76,7 @@
             </form>
           </div>
         </div>
+        <!-- End Modal -->
         {% else %}
         <div class="card">
             <div class="card-body">

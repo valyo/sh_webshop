@@ -38,43 +38,44 @@
                         <i class="bi bi-cloud-download"></i> Import bookings from Google Sheet
                     </button>
                 </div>
-                <!-- Modal -->
-                <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <form action="{{ url_for('lammandel.import_bookings') }}" method="POST">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="importModalLabel">Import bookings</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Stäng"></button>
-                        </div>
-                        <div class="modal-body">
-                          <input type="hidden" name="season_id" value="{{ selected_season.id }}">
-                          <div class="mb-3">
-                            <label for="sheet_link" class="form-label">Google Sheet link</label>
-                            <input type="text" class="form-control" id="sheet_link" name="sheet_link" required>
-                            <div class="form-text">Paste the link to your Google Sheet.</div>
-                          </div>
-                          <div class="mb-3">
-                            <label for="range_name" class="form-label">Range (e.g. Sheet1!A2:K)</label>
-                            <input type="text" class="form-control" id="range_name" name="range_name" value="Sheet1!A2:K" required>
-                            <div class="form-text">Specify the cell range to import.</div>
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                          <button type="submit" class="btn btn-primary">Import</button>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-                <!-- End Modal -->
+                <!-- Add your season-specific content here -->
                 <div class="mt-4">
                     <h3>Overview</h3>
-                    <p>Information about lammandel for season {{ selected_season.year }} will be shown here.</p>
+                    <p>Information about lammandel for season {{ selected_season.year }} will come here.</p>
                 </div>
             </div>
         </div>
+        <!-- Modal -->
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <form action="{{ url_for('lammandel.import_bookings') }}" method="POST">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="importModalLabel">Import bookings</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Stäng"></button>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden" name="season_id" value="{{ selected_season.id }}">
+                  <div class="mb-3">
+                    <label for="sheet_link" class="form-label">Google Sheet link</label>
+                    <input type="text" class="form-control" id="sheet_link" name="sheet_link" required>
+                    <div class="form-text">Paste the link to your Google Sheet.</div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="range_name" class="form-label">Range (e.g. Sheet1!A2:K)</label>
+                    <input type="text" class="form-control" id="range_name" name="range_name" value="Form Responses 1!A2:I" required>
+                    <div class="form-text">Specify the cell range to import.</div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Import</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!-- End Modal -->
         {% else %}
         <div class="card">
             <div class="card-body">
@@ -84,4 +85,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

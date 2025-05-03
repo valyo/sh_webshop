@@ -6,6 +6,8 @@ from sqlalchemy.sql import func
 class Season(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.String(10))
+    price = db.Column(db.Float, nullable=True)
+    price_lamm = db.Column(db.Float, nullable=True)
     
     def __repr__(self):
         return f'<Season {self.year}>'
@@ -62,4 +64,46 @@ class BookingsLamm(db.Model):
 
     def __repr__(self):
         return f'<BookingsLamm {self.name} - {self.season.year}>'
+
+
+class Invoice(db.Model):
+    __tablename__ = 'invoices'
+
+    id = db.Column(db.Integer, primary_key=True)
+    season_id = db.Column(db.Integer, db.ForeignKey('season.id'), nullable=False)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
+    invoice_id = db.Column(db.String(50), unique=True, nullable=False)
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    sent = db.Column(db.Boolean, default=False)
+    date_payed = db.Column(db.DateTime, nullable=True)
+    number = db.Column(db.Integer, nullable=False)
+    tot_sum = db.Column(db.Float, nullable=False)
+
+    # Relationships
+    season = db.relationship('Season', backref=db.backref('invoices', lazy=True))
+    booking = db.relationship('Bookings', backref=db.backref('invoices', lazy=True))
+
+    def __repr__(self):
+        return f'<Invoice {self.invoice_id} for booking {self.booking_id}>'
+
+
+class InvoiceLamm(db.Model):
+    __tablename__ = 'invoices_lamm'
+
+    id = db.Column(db.Integer, primary_key=True)
+    season_id = db.Column(db.Integer, db.ForeignKey('season.id'), nullable=False)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings_lamm.id'), nullable=False)
+    invoice_id = db.Column(db.String(50), unique=True, nullable=False)
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    sent = db.Column(db.Boolean, default=False)
+    date_payed = db.Column(db.DateTime, nullable=True)
+    number = db.Column(db.Integer, nullable=False)
+    tot_sum = db.Column(db.Float, nullable=False)
+
+    # Relationships
+    season = db.relationship('Season', backref=db.backref('invoices_lamm', lazy=True))
+    booking = db.relationship('BookingsLamm', backref=db.backref('invoices_lamm', lazy=True))
+
+    def __repr__(self):
+        return f'<InvoiceLamm {self.invoice_id} for booking {self.booking_id}>'
 

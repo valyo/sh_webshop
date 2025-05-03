@@ -18,7 +18,9 @@ def create_season():
         return redirect(url_for('main.home'))
     
     year = request.form.get('year')
-    
+    price = request.form.get('price')
+    price_lamm = request.form.get('price_lamm')
+
     # Check if season already exists
     existing_season = Season.query.filter_by(year=year).first()
     if existing_season:
@@ -26,7 +28,11 @@ def create_season():
         return redirect(url_for('seasons.list_seasons'))
     
     # Create new season
-    new_season = Season(year=year)
+    new_season = Season(
+        year=year,
+        price=price,
+        price_lamm=price_lamm
+    )
     db.session.add(new_season)
     db.session.commit()
     

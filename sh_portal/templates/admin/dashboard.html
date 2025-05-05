@@ -13,23 +13,22 @@
                     <h5 class="card-title">Welcome to the Admin Dashboard</h5>
                     <p class="card-text">This is a protected area that requires authentication.</p>
                     
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Andelsbiodling</h5>
-                                    <p class="card-text">Manage Andelsbiodling bookings and settings.</p>
-                                    <a href="{{ url_for('andelsbiodling.index') }}" class="btn btn-primary">Go to Andelsbiodling</a>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-body">
                                     <h5 class="card-title">Lammandel</h5>
                                     <p class="card-text">Manage Lammandel bookings and settings.</p>
                                     <a href="{{ url_for('lammandel.index') }}" class="btn btn-primary">Go to Lammandel</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Biodling</h5>
+                                    <p class="card-text">Manage Biodling bookings and settings.</p>
+                                    <a href="{{ url_for('biodling.index') }}" class="btn btn-primary">Go to Biodling</a>
                                 </div>
                             </div>
                         </div>

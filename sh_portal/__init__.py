@@ -65,10 +65,12 @@ def create_app():
     from sh_portal.andelsbiodling import andelsbiodling
     from sh_portal.lammandel import lammandel
     from sh_portal.admin import admin
+    from sh_portal.products import products
 
     app.register_blueprint(main)
     app.register_blueprint(andelsbiodling)
     app.register_blueprint(lammandel)
     app.register_blueprint(admin)
+    app.register_blueprint(products)
 
     return app

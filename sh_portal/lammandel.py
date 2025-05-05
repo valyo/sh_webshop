@@ -14,9 +14,6 @@ def extract_sheet_id(sheet_link):
 
 @lammandel.route('/lammandel/import-bookings', methods=['POST'])
 def import_bookings():
-    if not session.get('user'):
-        return redirect(url_for('main.home'))
-
     try:
         season_id = request.form.get('season_id')
         sheet_link = request.form.get('sheet_link')
@@ -50,9 +47,6 @@ def import_bookings():
 
 @lammandel.route('/lammandel', methods=['GET', 'POST'])
 def index():
-    if not session.get('user'):
-        return redirect(url_for('main.home'))
-    
     seasons = Season.query.order_by(Season.year.desc()).all()
     selected_season_id = (
         request.form.get('season_id') or

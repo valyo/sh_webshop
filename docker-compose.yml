@@ -3,7 +3,7 @@ services:
   backend:
     build: .
     ports:
-      - "8087:5000"
+      - "8088:5000"
     volumes:
       - .:/app
     env_file:

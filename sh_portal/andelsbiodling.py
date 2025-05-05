@@ -46,9 +46,6 @@ def extract_sheet_id(sheet_link):
 
 @andelsbiodling.route('/andelsbiodling/import-bookings', methods=['POST'])
 def import_bookings():
-    if not session.get('user'):
-        return redirect(url_for('main.home'))
-
     try:
         season_id = request.form.get('season_id')
         sheet_link = request.form.get('sheet_link')
@@ -58,7 +55,6 @@ def import_bookings():
             return redirect(url_for('andelsbiodling.index'))
 
         sheet_id = extract_sheet_id(sheet_link)
-
         data = get_sheet_data(sheet_id, range_name)
         if not data:
             flash('Could not fetch data from Google Sheet.', 'error')
@@ -80,9 +76,6 @@ def import_bookings():
 
 @andelsbiodling.route('/andelsbiodling', methods=['GET', 'POST'])
 def index():
-    if not session.get('user'):
-        return redirect(url_for('main.home'))
-    
     seasons = Season.query.order_by(Season.year.desc()).all()
     selected_season_id = (
         request.form.get('season_id') or

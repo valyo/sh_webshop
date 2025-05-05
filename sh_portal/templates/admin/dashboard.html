@@ -7,34 +7,46 @@
     <div class="col-12">
         <h1 class="mb-4">{{ page_title }}</h1>
         
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Welcome to the Admin Dashboard</h5>
-                <p class="card-text">This is a protected area that requires authentication.</p>
-                
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Andelsbiodling</h5>
-                                <p class="card-text">Manage Andelsbiodling bookings and settings.</p>
-                                <a href="{{ url_for('andelsbiodling.index') }}" class="btn btn-primary">Go to Andelsbiodling</a>
+        {% if user %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome to the Admin Dashboard</h5>
+                    <p class="card-text">This is a protected area that requires authentication.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Andelsbiodling</h5>
+                                    <p class="card-text">Manage Andelsbiodling bookings and settings.</p>
+                                    <a href="{{ url_for('andelsbiodling.index') }}" class="btn btn-primary">Go to Andelsbiodling</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Lammandel</h5>
-                                <p class="card-text">Manage Lammandel bookings and settings.</p>
-                                <a href="{{ url_for('lammandel.index') }}" class="btn btn-primary">Go to Lammandel</a>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Lammandel</h5>
+                                    <p class="card-text">Manage Lammandel bookings and settings.</p>
+                                    <a href="{{ url_for('lammandel.index') }}" class="btn btn-primary">Go to Lammandel</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Admin Access Required</h5>
+                    <p class="card-text">Please log in with GitHub to access the admin dashboard.</p>
+                    <a href="{{ url_for('admin.login') }}" class="btn btn-primary">
+                        <i class="bi bi-github"></i> Login with GitHub
+                    </a>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %} 

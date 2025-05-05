@@ -52,13 +52,13 @@ def create_app(config_class=Config):
     # Register blueprints
     from .home import main
     from .biodling import biodling
-    from .lammandel import lammandel
+    from .lammskinn import lammskinn
     from .admin import admin
     from .products import products
 
     app.register_blueprint(main)
     app.register_blueprint(biodling)
-    app.register_blueprint(lammandel)
+    app.register_blueprint(lammskinn)
     app.register_blueprint(admin)
     app.register_blueprint(products)
 

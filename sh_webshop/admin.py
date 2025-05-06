@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, session, flash, request, current_app
 from functools import wraps
 from requests_oauthlib import OAuth2Session
-from .models import Admin
+from .models import Admin, Category
+from . import db
+import re
 
 admin = Blueprint('admin', __name__)
 
@@ -18,6 +20,13 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def slugify(text):
+    """Convert text to a URL-friendly slug."""
+    text = text.lower()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[-\s]+', '-', text).strip('-')
+    return text
+
 @admin.route('/admin')
 @login_required
 def admin_dashboard():
@@ -26,6 +35,116 @@ def admin_dashboard():
         user=session.get('user'),
         page_title="Admin Dashboard"
     )
+
+@admin.route('/admin/categories')
+@login_required
+def categories():
+    categories = Category.query.order_by(Category.name).all()
+    return render_template(
+        'admin/categories/index.html',
+        user=session.get('user'),
+        categories=categories,
+        page_title="Manage Categories"
+    )
+
+@admin.route('/admin/categories/create', methods=['GET', 'POST'])
+@login_required
+def create_category():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        
+        if not name:
+            flash('Category name is required.', 'error')
+            return redirect(url_for('admin.create_category'))
+        
+        # Create slug from name
+        slug = slugify(name)
+        
+        # Check if slug already exists
+        if Category.query.filter_by(slug=slug).first():
+            flash('A category with this name already exists.', 'error')
+            return redirect(url_for('admin.create_category'))
+        
+        category = Category(
+            name=name,
+            slug=slug,
+            description=description
+        )
+        
+        try:
+            db.session.add(category)
+            db.session.commit()
+            flash('Category created successfully!', 'success')
+            return redirect(url_for('admin.categories'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while creating the category.', 'error')
+            current_app.logger.error(f"Error creating category: {str(e)}")
+    
+    return render_template(
+        'admin/categories/create.html',
+        user=session.get('user'),
+        page_title="Create Category"
+    )
+
+@admin.route('/admin/categories/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_category(id):
+    category = Category.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        
+        if not name:
+            flash('Category name is required.', 'error')
+            return redirect(url_for('admin.edit_category', id=id))
+        
+        # Create slug from name
+        slug = slugify(name)
+        
+        # Check if slug already exists (excluding current category)
+        existing = Category.query.filter_by(slug=slug).first()
+        if existing and existing.id != id:
+            flash('A category with this name already exists.', 'error')
+            return redirect(url_for('admin.edit_category', id=id))
+        
+        category.name = name
+        category.slug = slug
+        category.description = description
+        
+        try:
+            db.session.commit()
+            flash('Category updated successfully!', 'success')
+            return redirect(url_for('admin.categories'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while updating the category.', 'error')
+            current_app.logger.error(f"Error updating category: {str(e)}")
+    
+    return render_template(
+        'admin/categories/edit.html',
+        user=session.get('user'),
+        category=category,
+        page_title="Edit Category"
+    )
+
+@admin.route('/admin/categories/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_category(id):
+    category = Category.query.get_or_404(id)
+    
+    try:
+        db.session.delete(category)
+        db.session.commit()
+        flash('Category deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while deleting the category.', 'error')
+        current_app.logger.error(f"Error deleting category: {str(e)}")
+    
+    return redirect(url_for('admin.categories'))
 
 @admin.route('/login')
 def login():

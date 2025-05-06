@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, session, flash, request, current_app
 from functools import wraps
 from requests_oauthlib import OAuth2Session
-from .models import Admin, Category
+from .models import Admin, Category, Product
 from . import db
 import re
 
@@ -145,6 +145,154 @@ def delete_category(id):
         current_app.logger.error(f"Error deleting category: {str(e)}")
     
     return redirect(url_for('admin.categories'))
+
+@admin.route('/admin/products')
+@login_required
+def products():
+    products = Product.query.order_by(Product.name).all()
+    return render_template(
+        'admin/products/list.html',
+        user=session.get('user'),
+        products=products,
+        page_title="Manage Products"
+    )
+
+@admin.route('/admin/products/create', methods=['GET', 'POST'])
+@login_required
+def create_product():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        price = request.form.get('price')
+        stock = request.form.get('stock')
+        category_id = request.form.get('category_id')
+        image_url = request.form.get('image_url')
+        is_active = bool(request.form.get('is_active'))
+        
+        if not all([name, price, category_id]):
+            flash('Name, price, and category are required.', 'error')
+            return redirect(url_for('admin.create_product'))
+        
+        try:
+            price = float(price)
+            stock = int(stock) if stock else 0
+        except ValueError:
+            flash('Price and stock must be valid numbers.', 'error')
+            return redirect(url_for('admin.create_product'))
+        
+        # Create slug from name
+        slug = slugify(name)
+        
+        # Check if slug already exists
+        if Product.query.filter_by(slug=slug).first():
+            flash('A product with this name already exists.', 'error')
+            return redirect(url_for('admin.create_product'))
+        
+        product = Product(
+            name=name,
+            slug=slug,
+            description=description,
+            price=price,
+            stock=stock,
+            category_id=category_id,
+            image_url=image_url,
+            is_active=is_active
+        )
+        
+        try:
+            db.session.add(product)
+            db.session.commit()
+            flash('Product created successfully!', 'success')
+            return redirect(url_for('admin.products'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while creating the product.', 'error')
+            current_app.logger.error(f"Error creating product: {str(e)}")
+    
+    categories = Category.query.order_by(Category.name).all()
+    return render_template(
+        'admin/products/create.html',
+        user=session.get('user'),
+        categories=categories,
+        page_title="Create Product"
+    )
+
+@admin.route('/admin/products/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_product(id):
+    product = Product.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        price = request.form.get('price')
+        stock = request.form.get('stock')
+        category_id = request.form.get('category_id')
+        image_url = request.form.get('image_url')
+        is_active = bool(request.form.get('is_active'))
+        
+        if not all([name, price, category_id]):
+            flash('Name, price, and category are required.', 'error')
+            return redirect(url_for('admin.edit_product', id=id))
+        
+        try:
+            price = float(price)
+            stock = int(stock) if stock else 0
+        except ValueError:
+            flash('Price and stock must be valid numbers.', 'error')
+            return redirect(url_for('admin.edit_product', id=id))
+        
+        # Create slug from name
+        slug = slugify(name)
+        
+        # Check if slug already exists (excluding current product)
+        existing = Product.query.filter_by(slug=slug).first()
+        if existing and existing.id != id:
+            flash('A product with this name already exists.', 'error')
+            return redirect(url_for('admin.edit_product', id=id))
+        
+        product.name = name
+        product.slug = slug
+        product.description = description
+        product.price = price
+        product.stock = stock
+        product.category_id = category_id
+        product.image_url = image_url
+        product.is_active = is_active
+        
+        try:
+            db.session.commit()
+            flash('Product updated successfully!', 'success')
+            return redirect(url_for('admin.products'))
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while updating the product.', 'error')
+            current_app.logger.error(f"Error updating product: {str(e)}")
+    
+    categories = Category.query.order_by(Category.name).all()
+    return render_template(
+        'admin/products/edit.html',
+        user=session.get('user'),
+        product=product,
+        categories=categories,
+        page_title="Edit Product"
+    )
+
+@admin.route('/admin/products/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_product(id):
+    product = Product.query.get_or_404(id)
+    
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        flash('Product deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while deleting the product.', 'error')
+        current_app.logger.error(f"Error deleting product: {str(e)}")
+    
+    return redirect(url_for('admin.products'))
 
 @admin.route('/login')
 def login():

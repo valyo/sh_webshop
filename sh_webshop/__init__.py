@@ -13,7 +13,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 # Import models
-from .models import Season, Admin
+from .models import Admin
 
 # GitHub OAuth settings
 GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')

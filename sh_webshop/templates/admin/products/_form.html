@@ -49,6 +49,16 @@
                                       id="description" 
                                       name="description" 
                                       rows="3">{{ request.form.description or product.description if product else '' }}</textarea>
+                            <div class="form-text">Short description for product listings.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="long_description" class="form-label">Long Description</label>
+                            <textarea class="form-control"
+                                      id="long_description"
+                                      name="long_description"
+                                      rows="6">{{ request.form.long_description or product.long_description if product else '' }}</textarea>
+                            <div class="form-text">Detailed description for the product page.</div>
                         </div>
 
                         <div class="row">
@@ -56,12 +66,12 @@
                                 <div class="mb-3">
                                     <label for="price" class="form-label">Price (SEK)</label>
                                     <input type="number" 
-                                           class="form-control" 
-                                           id="price" 
-                                           name="price" 
-                                           step="0.01" 
-                                           min="0" 
-                                           required 
+                                           class="form-control"
+                                           id="price"
+                                           name="price"
+                                           step="0.01"
+                                           min="0"
+                                           required
                                            value="{{ request.form.price or product.price if product else '' }}">
                                 </div>
                             </div>
@@ -93,7 +103,7 @@
 
                         <div class="mb-3">
                             <label for="image_url" class="form-label">Image URL</label>
-                            <input type="url" 
+                            <input type="url"
                                    class="form-control" 
                                    id="image_url" 
                                    name="image_url" 
@@ -102,9 +112,9 @@
                         </div>
 
                         <div class="mb-3 form-check">
-                            <input type="checkbox" 
+                            <input type="checkbox"
                                    class="form-check-input" 
-                                   id="is_active" 
+                                   id="is_active"
                                    name="is_active" 
                                    value="1"
                                    {% if request.form.is_active or (product and product.is_active) %}checked{% endif %}>

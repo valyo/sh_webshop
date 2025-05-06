@@ -163,6 +163,7 @@ def create_product():
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
+        long_description = request.form.get('long_description')
         price = request.form.get('price')
         stock = request.form.get('stock')
         category_id = request.form.get('category_id')
@@ -192,6 +193,7 @@ def create_product():
             name=name,
             slug=slug,
             description=description,
+            long_description=long_description,
             price=price,
             stock=stock,
             category_id=category_id,
@@ -225,6 +227,7 @@ def edit_product(id):
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
+        long_description = request.form.get('long_description')
         price = request.form.get('price')
         stock = request.form.get('stock')
         category_id = request.form.get('category_id')
@@ -254,6 +257,7 @@ def edit_product(id):
         product.name = name
         product.slug = slug
         product.description = description
+        product.long_description = long_description
         product.price = price
         product.stock = stock
         product.category_id = category_id

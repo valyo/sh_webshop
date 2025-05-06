@@ -33,24 +33,69 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('about.index') }}">Om oss</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-shopping-cart"></i>
+                            {% if cart_count > 0 %}
+                                <span class="badge bg-primary rounded-pill">{{ cart_count }}</span>
+                            {% endif %}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cartDropdown" style="min-width: 300px;">
+                            <div class="px-3 py-2">
+                                {% if cart_count > 0 %}
+                                    <div class="cart-items">
+                                        {% for product_id, item in session.get('cart', {}).items() %}
+                                            <div class="d-flex align-items-center mb-2">
+                                                {% if item.image_url %}
+                                                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% endif %}
+                                                <div class="flex-grow-1">
+                                                    <div class="small">{{ item.name }}</div>
+                                                    <div class="small text-muted">{{ item.quantity }} x {{ "%.2f"|format(item.price) }} SEK</div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>Total:</strong>
+                                        <strong>
+                                            {% set total = namespace(value=0) %}
+                                            {% for item in session.get('cart', {}).values() %}
+                                                {% set total.value = total.value + (item.price * item.quantity) %}
+                                            {% endfor %}
+                                            {{ "%.2f"|format(total.value) }} SEK
+                                        </strong>
+                                    </div>
+                                    <div class="d-grid gap-2 mt-2">
+                                        <a href="{{ url_for('cart.view_cart') }}" class="btn btn-primary btn-sm">View Cart</a>
+                                    </div>
+                                {% else %}
+                                    <p class="text-center mb-0">Your cart is empty</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
-                    {% if session.get('user') %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <img src="{{ session.get('user').avatar_url }}" alt="Profile" class="rounded-circle" style="width: 24px; height: 24px;">
-                                {{ session.get('user').username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">Logout</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin.login') }}">Login</a>
-                        </li>
+                    {% if request.blueprint == 'admin' %}
+                        {% if session.get('user') %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <img src="{{ session.get('user').avatar_url }}" alt="Profile" class="rounded-circle" style="width: 24px; height: 24px;">
+                                    {{ session.get('user').username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">Logout</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.login') }}">Login</a>
+                            </li>
+                        {% endif %}
                     {% endif %}
                 </ul>
             </div>

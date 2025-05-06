@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -26,6 +26,11 @@ SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets.readonly',
     'https://www.googleapis.com/auth/drive.readonly'
 ]
+
+def get_cart_count():
+    """Get the total number of items in the cart."""
+    cart = session.get('cart', {})
+    return sum(item['quantity'] for item in cart.values())
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -56,6 +61,7 @@ def create_app(config_class=Config):
     from .admin import admin
     from .products import products
     from .about import about
+    from .cart import cart
 
     app.register_blueprint(main)
     app.register_blueprint(biodling)
@@ -63,5 +69,11 @@ def create_app(config_class=Config):
     app.register_blueprint(admin)
     app.register_blueprint(products)
     app.register_blueprint(about)
+    app.register_blueprint(cart)
+
+    # Add template context processor
+    @app.context_processor
+    def inject_cart_count():
+        return dict(cart_count=get_cart_count())
 
     return app

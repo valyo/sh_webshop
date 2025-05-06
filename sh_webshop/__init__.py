@@ -41,7 +41,7 @@ def create_app(config_class=Config):
         print('Database tables created successfully!')
 
     # Import flask commands - all
-    from sh_portal.commands import (
+    from sh_webshop.commands import (
         create_new_admin
     )
     # Add flask commands - general
@@ -55,11 +55,13 @@ def create_app(config_class=Config):
     from .lammskinn import lammskinn
     from .admin import admin
     from .products import products
+    from .about import about
 
     app.register_blueprint(main)
     app.register_blueprint(biodling)
     app.register_blueprint(lammskinn)
     app.register_blueprint(admin)
     app.register_blueprint(products)
+    app.register_blueprint(about)
 
     return app

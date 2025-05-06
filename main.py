@@ -1,4 +1,4 @@
-from sh_portal import create_app, db
+from sh_webshop import create_app, db
 
 app = create_app()
 

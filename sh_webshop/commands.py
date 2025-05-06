@@ -10,7 +10,7 @@ import click
 import flask
 
 # Own
-from sh_portal import db
+from sh_webshop import db
 
 @click.command("create-admin")
 @click.option("--github_id", "-ghid", type=str, required=True)
@@ -28,7 +28,7 @@ def create_new_admin(
 
     Use name and id from github account info, but not email.  
     """
-    from sh_portal import models
+    from sh_webshop import models
 
     error_message = ""
     if re.findall(r"[^0-9]", github_id):

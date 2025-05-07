@@ -46,18 +46,11 @@
                                               method="POST" 
                                               action="{{ url_for('cart.update_item', product_id=item.id) }}">
                                             <div class="input-group" style="width: 120px;">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity(this)">-</button>
-                                                <input type="number" 
-                                                       class="form-control text-center" 
-                                                       name="quantity" 
-                                                       value="{{ item.quantity }}" 
-                                                       min="0" 
-                                                       max="{{ item.product.stock }}">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity(this)">+</button>
+                                                <button type="button" class="btn btn-outline-secondary" onclick="this.parentElement.querySelector('input').stepDown()">-</button>
+                                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" class="form-control text-center">
+                                                <button type="button" class="btn btn-outline-secondary" onclick="this.parentElement.querySelector('input').stepUp()">+</button>
                                             </div>
-                                            <button type="submit" class="btn btn-link text-primary ms-2">
-                                                <i class="fas fa-save"></i>
-                                            </button>
+                                            <button type="submit" class="btn btn-primary ms-2">Update</button>
                                         </form>
                                     </td>
                                     <td>{{ "%.2f"|format(item.item_total) }} SEK</td>

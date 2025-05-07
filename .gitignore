@@ -25,25 +25,24 @@ venv/
 env/
 ENV/
 
-# Flask
-instance/
-.webassets-cache
-*.db
-
-# Docker
-.docker/
-
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
+# Flask
+instance/
+.webassets-cache
+*.db
 
 # Environment variables
 .env
 .env.*
-!.env.example 
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/ 

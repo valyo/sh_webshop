@@ -47,6 +47,7 @@ sh_shop/
 ├── Dockerfile         # Docker configuration
 ├── docker-compose.yml # Docker Compose configuration
 ├── requirements.txt   # Python dependencies
+├── env.example       # Example environment variables
 └── .env              # Environment variables
 ```
 

@@ -70,7 +70,7 @@ sh_shop/
    docker-compose up --build
    ```
 
-The application will be available at `http://localhost:5000`
+The application will be available at `http://localhost:8088`
 
 To stop the application:
 ```bash
@@ -90,6 +90,39 @@ docker-compose exec web flask db migrate -m "migration message"
 
 # Apply migrations
 docker-compose exec web flask db upgrade
+```
+
+## Docker Image Versioning
+
+The application uses semantic versioning for Docker images. The version is stored in the `VERSION` file at the root of the repository.
+
+### Version Format
+Images are tagged with:
+- Full version (e.g., `v1.0.0`)
+- Version with Git SHA (e.g., `v1.0.0-a1b2c3d`)
+- Latest tag (for main branch)
+
+### Updating Version
+To update the version:
+
+1. Update the `VERSION` file with the new version number following semantic versioning:
+   - MAJOR version for incompatible API changes
+   - MINOR version for backwards-compatible functionality
+   - PATCH version for backwards-compatible bug fixes
+
+2. Commit and push the changes:
+   ```bash
+   git add VERSION
+   git commit -m "Bump version to X.Y.Z"
+   git push
+   ```
+
+3. The GitHub Action will automatically build and tag the new version.
+
+### Using Specific Versions
+To use a specific version:
+```bash
+docker pull ghcr.io/valyo/sh_webshop:v1.0.0
 ```
 
 ## Contributing

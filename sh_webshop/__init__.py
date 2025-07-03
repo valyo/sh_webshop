@@ -58,7 +58,7 @@ def create_app(config_class=Config):
     # Register blueprints
     from .home import main
     from .biodling import biodling
-    from .lammskinn import lammskinn
+    from .far_och_lamm import far_och_lamm
     from .admin import admin
     from .products import products
     from .about import about
@@ -66,7 +66,7 @@ def create_app(config_class=Config):
 
     app.register_blueprint(main)
     app.register_blueprint(biodling)
-    app.register_blueprint(lammskinn)
+    app.register_blueprint(far_och_lamm)
     app.register_blueprint(admin)
     app.register_blueprint(products)
     app.register_blueprint(about)

@@ -52,18 +52,22 @@ def categories():
 def create_category():
     if request.method == 'POST':
         name = request.form.get('name')
+        slug = request.form.get('slug')
         description = request.form.get('description')
         
         if not name:
             flash('Category name is required.', 'error')
             return redirect(url_for('admin.create_category'))
         
-        # Create slug from name
-        slug = slugify(name)
-        
+        # Create slug from name if not provided
+        if not slug:
+            slug = slugify(name)
+        else:
+            slug = slugify(slug)
+
         # Check if slug already exists
         if Category.query.filter_by(slug=slug).first():
-            flash('A category with this name already exists.', 'error')
+            flash('A category with this name or slug already exists.', 'error')
             return redirect(url_for('admin.create_category'))
         
         category = Category(
@@ -95,6 +99,7 @@ def edit_category(id):
     
     if request.method == 'POST':
         name = request.form.get('name')
+        slug = request.form.get('slug')
         description = request.form.get('description')
         
         if not name:
@@ -102,12 +107,15 @@ def edit_category(id):
             return redirect(url_for('admin.edit_category', id=id))
         
         # Create slug from name
-        slug = slugify(name)
+        if not slug:
+            slug = slugify(name)
+        else:
+            slug = slugify(slug)
         
         # Check if slug already exists (excluding current category)
         existing = Category.query.filter_by(slug=slug).first()
         if existing and existing.id != id:
-            flash('A category with this name already exists.', 'error')
+            flash('A category with this name or slug already exists.', 'error')
             return redirect(url_for('admin.edit_category', id=id))
         
         category.name = name

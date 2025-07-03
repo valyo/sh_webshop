@@ -3,16 +3,42 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">{{ page_title }}</h1>
-        
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Våra produkter</h5>
-                <p class="card-text">Här hittar du information om våra produkter.</p>
+<div class="container mt-4">
+    <h1 class="mb-4">{{ page_title }}</h1>
+
+    <div class="row">
+        {% if products %}
+            {% for product in products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        {% if product.image_url %}
+                            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>Pris:</strong> {{ product.price }} kr</p>
+                            <p class="card-text"><strong>Lagerstatus:</strong> {{ product.stock }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <form action="{{ url_for('cart.add_item') }}" method="post">
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <div class="input-group">
+                                    <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-shopping-cart"></i> Lägg till i varukorgen
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col">
+                <p>Det finns inga produkter att visa.</p>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %} 

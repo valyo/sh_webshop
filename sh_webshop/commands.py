@@ -12,6 +12,7 @@ import flask
 # Own
 from sh_webshop import db
 
+
 @click.command("create-admin")
 @click.option("--github_id", "-ghid", type=str, required=True)
 @click.option("--github_name", "-ghn", type=str, required=True)
@@ -26,7 +27,7 @@ def create_new_admin(
 ):
     """Create a new admin.
 
-    Use name and id from github account info, but not email.  
+    Use name and id from github account info, but not email.
     """
     from sh_webshop import models
 

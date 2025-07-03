@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template, session
 
-products = Blueprint('products', __name__)
+products = Blueprint("products", __name__)
 
-@products.route('/produkter')
+
+@products.route("/produkter")
 def index():
     return render_template(
-        'products/index.html',
-        user=session.get('user'),
-        page_title="Produkter"
-    ) 
+        "products/index.html", user=session.get("user"), page_title="Produkter"
+    )

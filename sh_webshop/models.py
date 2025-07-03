@@ -13,17 +13,19 @@ class Admin(db.Model, UserMixin):
     # password = db.Column(db.String(150))
 
     def __repr__(self):
-        return f'<Admin {self.name}>'
+        return f"<Admin {self.name}>"
+
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     slug = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
-    products = db.relationship('Product', backref='category', lazy=True)
+    products = db.relationship("Product", backref="category", lazy=True)
 
     def __repr__(self):
-        return f'<Category {self.name}>'
+        return f"<Category {self.name}>"
+
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -34,13 +36,16 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     stock = db.Column(db.Integer, default=0)
     image_url = db.Column(db.String(200))
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def __repr__(self):
-        return f'<Product {self.name}>'
+        return f"<Product {self.name}>"
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,47 +59,55 @@ class User(db.Model):
     phone = db.Column(db.String(20))
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    orders = db.relationship('Order', backref='user', lazy=True)
-    cart_items = db.relationship('CartItem', backref='user', lazy=True)
+    orders = db.relationship("Order", backref="user", lazy=True)
+    cart_items = db.relationship("CartItem", backref="user", lazy=True)
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f"<User {self.email}>"
+
 
 class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
     quantity = db.Column(db.Integer, default=1)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    product = db.relationship('Product')
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+    product = db.relationship("Product")
 
     def __repr__(self):
-        return f'<CartItem {self.id}>'
+        return f"<CartItem {self.id}>"
+
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    status = db.Column(db.String(20), default='pending')  # pending, paid, shipped, delivered, cancelled
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    status = db.Column(
+        db.String(20), default="pending"
+    )  # pending, paid, shipped, delivered, cancelled
     total_amount = db.Column(db.Float, nullable=False)
     shipping_address = db.Column(db.String(200))
     shipping_city = db.Column(db.String(100))
     shipping_postal_code = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    items = db.relationship('OrderItem', backref='order', lazy=True)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+    items = db.relationship("OrderItem", backref="order", lazy=True)
 
     def __repr__(self):
-        return f'<Order {self.id}>'
+        return f"<Order {self.id}>"
+
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)  # Price at time of purchase
-    product = db.relationship('Product')
+    product = db.relationship("Product")
 
     def __repr__(self):
-        return f'<OrderItem {self.id}>'
-
+        return f"<OrderItem {self.id}>"

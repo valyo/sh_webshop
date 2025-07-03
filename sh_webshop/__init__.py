@@ -16,21 +16,23 @@ migrate = Migrate()
 from .models import Admin
 
 # GitHub OAuth settings
-GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
-GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
-GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
-GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
-GITHUB_API_URL = 'https://api.github.com/user'
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
+GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
+GITHUB_API_URL = "https://api.github.com/user"
 
 SCOPES = [
-    'https://www.googleapis.com/auth/spreadsheets.readonly',
-    'https://www.googleapis.com/auth/drive.readonly'
+    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/drive.readonly",
 ]
+
 
 def get_cart_count():
     """Get the total number of items in the cart."""
-    cart = session.get('cart', {})
-    return sum(item['quantity'] for item in cart.values())
+    cart = session.get("cart", {})
+    return sum(item["quantity"] for item in cart.values())
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -43,16 +45,15 @@ def create_app(config_class=Config):
     # Create database tables
     with app.app_context():
         db.create_all()
-        print('Database tables created successfully!')
+        print("Database tables created successfully!")
 
     # Import flask commands - all
-    from sh_webshop.commands import (
-        create_new_admin
-    )
+    from sh_webshop.commands import create_new_admin
+
     # Add flask commands - general
     app.cli.add_command(create_new_admin)
 
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     # Register blueprints
     from .home import main

@@ -3,16 +3,96 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">{{ page_title }}</h1>
-        
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Våra får- och lammprodukter</h5>
-                <p class="card-text">Här hittar du information om våra får- och lammprodukter.</p>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">{{ page_title }}</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Våra får- och lammprodukter</h5>
+                </div>
             </div>
+
+            {% if products %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for product in products %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if product.image_url %}
+                                    <img src="{{ product.image_url }}" 
+                                         class="card-img-top" 
+                                         alt="{{ product.name }}"
+                                         style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">{{ product.description }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="h5 mb-0">{{ "%.2f"|format(product.price) }} SEK</span>
+                                        {% if product.stock > 0 %}
+                                            <span class="badge bg-success">I lager</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Slut i lager</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <form class="d-flex gap-2" method="POST" action="{{ url_for('cart.add_item') }}">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <div class="input-group" style="width: 120px;">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity(this)">-</button>
+                                            <input type="number"
+                                                   class="form-control text-center"
+                                                   name="quantity"
+                                                   value="1"
+                                                   min="1"
+                                                   max="{{ product.stock }}"
+                                                   {% if product.stock <= 0 %}disabled{% endif %}>
+                                            <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity(this)">+</button>
+                                        </div>
+                                        <button type="submit"
+                                                class="btn btn-primary flex-grow-1"
+                                                {% if product.stock <= 0 %}disabled{% endif %}>
+                                            <i class="fas fa-shopping-cart"></i> Lägg i varukorg
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    {% if category %}
+                        Inga produkter tillgängliga just nu.
+                    {% else %}
+                        Kategorin "Får och lamm produkter" hittades inte. Kontakta administratören.
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+function incrementQuantity(button) {
+    const input = button.parentElement.querySelector('input');
+    const max = parseInt(input.getAttribute('max'));
+    const currentValue = parseInt(input.value);
+    if (currentValue < max) {
+        input.value = currentValue + 1;
+    }
+}
+
+function decrementQuantity(button) {
+    const input = button.parentElement.querySelector('input');
+    const currentValue = parseInt(input.value);
+    if (currentValue > 1) {
+        input.value = currentValue - 1;
+    }
+}
+</script>
+{% endblock %}
 {% endblock %} 

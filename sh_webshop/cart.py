@@ -25,26 +25,29 @@ def add_item():
     product_id = request.form.get("product_id")
     quantity = request.form.get("quantity")
 
+    # Get the referrer to redirect back to the current page
+    redirect_url = request.referrer or url_for("products.index")
+
     if not all([product_id, quantity]):
         flash("Invalid request.", "error")
-        return redirect(url_for("biodling.index"))
+        return redirect(redirect_url)
 
     try:
         product_id = str(product_id)  # Convert to string for session storage
         quantity = int(quantity)
     except ValueError:
         flash("Invalid quantity.", "error")
-        return redirect(url_for("biodling.index"))
+        return redirect(redirect_url)
 
     product = Product.query.get_or_404(int(product_id))
 
     if not product.is_active:
         flash("This product is no longer available.", "error")
-        return redirect(url_for("biodling.index"))
+        return redirect(redirect_url)
 
     if quantity > product.stock:
         flash("Requested quantity exceeds available stock.", "error")
-        return redirect(url_for("biodling.index"))
+        return redirect(redirect_url)
 
     # Update cart
     if product_id in cart:
@@ -62,7 +65,7 @@ def add_item():
 
     session["cart"] = cart
     flash("Product added to cart!", "success")
-    return redirect(url_for("biodling.index"))
+    return redirect(redirect_url)
 
 
 @cart.route("/cart")

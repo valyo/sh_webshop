@@ -29,24 +29,24 @@ def add_item():
     redirect_url = request.referrer or url_for("products.index")
 
     if not all([product_id, quantity]):
-        flash("Invalid request.", "error")
+        flash("Ogiltig förfrågan.", "error")
         return redirect(redirect_url)
 
     try:
         product_id = str(product_id)  # Convert to string for session storage
         quantity = int(quantity)
     except ValueError:
-        flash("Invalid quantity.", "error")
+        flash("Ogiltigt antal.", "error")
         return redirect(redirect_url)
 
     product = Product.query.get_or_404(int(product_id))
 
     if not product.is_active:
-        flash("This product is no longer available.", "error")
+        flash("Denna produkt är inte längre tillgänglig.", "error")
         return redirect(redirect_url)
 
     if quantity > product.stock:
-        flash("Requested quantity exceeds available stock.", "error")
+        flash("Det begärda antalet överskrider tillgängligt lager.", "error")
         return redirect(redirect_url)
 
     # Update cart
@@ -54,7 +54,7 @@ def add_item():
         cart[product_id]["quantity"] += quantity
         if cart[product_id]["quantity"] > product.stock:
             cart[product_id]["quantity"] = product.stock
-            flash("Quantity adjusted to available stock.", "warning")
+            flash("Det går inte att lägga till fler. Lagret är nu fullt i din varukorg.", "warning")
     else:
         cart[product_id] = {
             "quantity": quantity,
@@ -64,7 +64,7 @@ def add_item():
         }
 
     session["cart"] = cart
-    flash("Product added to cart!", "success")
+    flash("Produkten har lagts till i varukorgen!", "success")
     return redirect(redirect_url)
 
 
@@ -93,7 +93,7 @@ def view_cart():
         "cart/view.html",
         cart_items=cart_items,
         cart_total=cart_total,  # Pass as simple float
-        page_title="Shopping Cart",
+        page_title="Varukorg",
     )
 
 
@@ -111,14 +111,14 @@ def update_item(product_id):
             product = Product.query.get_or_404(int(product_id))
             if quantity > product.stock:
                 quantity = product.stock
-                flash("Quantity adjusted to available stock.", "warning")
+                flash("Det går inte att lägga till fler. Lagret är nu fullt i din varukorg.", "warning")
             cart[product_id]["quantity"] = quantity
     except ValueError:
-        flash("Invalid quantity.", "error")
+        flash("Ogiltigt antal.", "error")
         return redirect(url_for("cart.view_cart"))
 
     session["cart"] = cart
-    flash("Cart updated!", "success")
+    flash("Varukorgen har uppdaterats!", "success")
     return redirect(url_for("cart.view_cart"))
 
 
@@ -128,5 +128,5 @@ def remove_item(product_id):
     cart = get_cart()
     cart.pop(product_id, None)
     session["cart"] = cart
-    flash("Item removed from cart!", "success")
+    flash("Produkten har tagits bort från varukorgen!", "success")
     return redirect(url_for("cart.view_cart"))

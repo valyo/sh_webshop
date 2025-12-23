@@ -21,11 +21,11 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Product</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                                <th>Actions</th>
+                                <th>Produkt</th>
+                                <th>Pris</th>
+                                <th>Antal</th>
+                                <th>Totalt</th>
+                                <th>Ta bort</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -50,7 +50,7 @@
                                                 <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" class="form-control text-center">
                                                 <button type="button" class="btn btn-outline-secondary" onclick="this.parentElement.querySelector('input').stepUp()">+</button>
                                             </div>
-                                            <button type="submit" class="btn btn-primary ms-2">Update</button>
+                                            <button type="submit" class="btn btn-primary ms-2">Uppdatera</button>
                                         </form>
                                     </td>
                                     <td>{{ "%.2f"|format(item.item_total) }} SEK</td>
@@ -78,17 +78,17 @@
 
                 <div class="d-flex justify-content-between mt-4">
                     <a href="{{ url_for('products.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Continue Shopping
+                        <i class="fas fa-arrow-left"></i> Fortsätt handla
                     </a>
                     <a href="#" class="btn btn-primary">
-                        <i class="fas fa-credit-card"></i> Proceed to Checkout
+                        <i class="fas fa-credit-card"></i> Fortsätt till betalning
                     </a>
                 </div>
             </div>
         </div>
     {% else %}
         <div class="alert alert-info">
-            Your cart is empty. <a href="{{ url_for('products.index') }}">Continue shopping</a>.
+            Din varukorg är tom. <a href="{{ url_for('products.index') }}">Fortsätt handla</a>.
         </div>
     {% endif %}
 </div>

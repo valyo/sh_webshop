@@ -107,20 +107,16 @@
 <!-- Image Zoom Modal -->
 {% if product.image_url %}
 <div class="modal fade" id="imageZoomModal" tabindex="-1" aria-labelledby="imageZoomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content bg-dark">
-            <div class="modal-header border-0">
-                <h5 class="modal-title text-white" id="imageZoomModalLabel">{{ product.name }}</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Stäng"></button>
-            </div>
-            <div class="modal-body p-0 text-center zoom-container" id="zoomContainer">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-transparent">
+            <button type="button" class="btn-close-zoom" data-bs-dismiss="modal" aria-label="Stäng">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body p-0 d-flex align-items-center justify-content-center zoom-container" id="zoomContainer">
                 <img src="{{ product.image_url }}"
                      alt="{{ product.name }}"
                      class="zoomable-image"
                      id="zoomableImage">
-            </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <span class="text-white-50 small">Klicka för att zooma in/ut. Dra för att panorera när inzoomad.</span>
             </div>
         </div>
     </div>
@@ -155,11 +151,44 @@
     font-size: 1.1rem;
 }
 
+#imageZoomModal .modal-content {
+    border: none;
+    background: transparent;
+}
+
+#imageZoomModal .modal-backdrop {
+    background: rgba(255,255,255,0.9);
+}
+
+.btn-close-zoom {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-close-zoom:hover {
+    background: rgba(0,0,0,0.8);
+    transform: scale(1.1);
+}
+
 .zoom-container {
     overflow: hidden;
     cursor: zoom-in;
-    max-height: 70vh;
-    background: #1a1a1a;
+    width: 100%;
+    height: 100vh;
 }
 
 .zoom-container.zoomed {
@@ -171,12 +200,13 @@
 }
 
 .zoomable-image {
-    max-width: 100%;
-    max-height: 70vh;
+    max-width: 90vw;
+    max-height: 90vh;
     transform-origin: center center;
     transition: transform 0.3s ease;
     user-select: none;
     -webkit-user-drag: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 </style>
 {% endif %}

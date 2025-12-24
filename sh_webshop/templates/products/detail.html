@@ -18,28 +18,37 @@
     <div class="row">
         <div class="col-md-6">
             {% if product.image_url %}
-                <img src="{{ product.image_url }}" 
-                     class="img-fluid rounded shadow" 
-                     alt="{{ product.name }}"
-                     style="max-height: 500px; width: 100%; object-fit: cover;">
+                <div class="position-relative product-image-container">
+                    <img src="{{ product.image_url }}"
+                         class="img-fluid rounded shadow product-image"
+                         alt="{{ product.name }}"
+                         style="max-height: 500px; width: 100%; object-fit: cover;">
+                    <button type="button"
+                            class="btn btn-light btn-zoom position-absolute"
+                            data-bs-toggle="modal"
+                            data-bs-target="#imageZoomModal"
+                            title="Förstora bild">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
             {% else %}
                 <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
                     <i class="fas fa-image fa-5x text-muted"></i>
                 </div>
             {% endif %}
         </div>
-        
+
         <div class="col-md-6">
             <h1 class="mb-3">{{ product.name }}</h1>
-            
+
             {% if product.category %}
                 <p class="text-muted mb-3">
                     <i class="fas fa-tag"></i> {{ product.category.name }}
                 </p>
             {% endif %}
-            
+
             <p class="lead mb-4">{{ product.description }}</p>
-            
+
             <div class="d-flex align-items-center mb-4">
                 <span class="h2 mb-0 me-3">{{ "%.2f"|format(product.price) }} SEK</span>
                 {% if product.stock > 0 %}
@@ -48,7 +57,7 @@
                     <span class="badge bg-danger fs-6">Slut i lager</span>
                 {% endif %}
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     <form class="d-flex gap-3 align-items-center" method="POST" action="{{ url_for('cart.add_item') }}">
@@ -72,13 +81,13 @@
                     </form>
                 </div>
             </div>
-            
+
             <a href="{{ url_for('products.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Tillbaka till produkter
             </a>
         </div>
     </div>
-    
+
     {% if product.long_description %}
     <div class="row mt-5">
         <div class="col-12">
@@ -94,6 +103,90 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Image Zoom Modal -->
+{% if product.image_url %}
+<div class="modal fade" id="imageZoomModal" tabindex="-1" aria-labelledby="imageZoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white" id="imageZoomModalLabel">{{ product.name }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Stäng"></button>
+            </div>
+            <div class="modal-body p-0 text-center zoom-container" id="zoomContainer">
+                <img src="{{ product.image_url }}"
+                     alt="{{ product.name }}"
+                     class="zoomable-image"
+                     id="zoomableImage">
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-light" id="zoomOut" title="Zooma ut">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-light" id="zoomReset" title="Återställ">
+                        <i class="fas fa-compress-arrows-alt"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-light" id="zoomIn" title="Zooma in">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
+                <span class="text-white-50 ms-3 small">Använd scrollhjulet eller knapparna för att zooma. Dra för att panorera.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-image-container {
+    display: inline-block;
+    width: 100%;
+}
+
+.btn-zoom {
+    top: 10px;
+    right: 10px;
+    opacity: 0.8;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-zoom:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-zoom i {
+    font-size: 1.1rem;
+}
+
+.zoom-container {
+    overflow: hidden;
+    cursor: grab;
+    max-height: 70vh;
+    background: #1a1a1a;
+}
+
+.zoom-container:active {
+    cursor: grabbing;
+}
+
+.zoomable-image {
+    max-width: 100%;
+    max-height: 70vh;
+    transform-origin: center center;
+    transition: transform 0.1s ease-out;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+</style>
+{% endif %}
 
 {% block scripts %}
 <script>
@@ -113,6 +206,141 @@ function decrementQuantity(button) {
         input.value = currentValue - 1;
     }
 }
+
+// Image zoom functionality
+{% if product.image_url %}
+(function() {
+    const modal = document.getElementById('imageZoomModal');
+    const image = document.getElementById('zoomableImage');
+    const container = document.getElementById('zoomContainer');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const zoomResetBtn = document.getElementById('zoomReset');
+
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let startX, startY;
+
+    const MIN_SCALE = 0.5;
+    const MAX_SCALE = 5;
+    const ZOOM_STEP = 0.3;
+
+    function updateTransform() {
+        image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+
+    function resetZoom() {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+    }
+
+    function zoom(delta, centerX, centerY) {
+        const prevScale = scale;
+        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale + delta));
+
+        if (centerX !== undefined && centerY !== undefined) {
+            // Zoom towards the point
+            const rect = container.getBoundingClientRect();
+            const x = centerX - rect.left - rect.width / 2;
+            const y = centerY - rect.top - rect.height / 2;
+
+            translateX -= x * (scale - prevScale) / prevScale;
+            translateY -= y * (scale - prevScale) / prevScale;
+        }
+
+        updateTransform();
+    }
+
+    // Button controls
+    zoomInBtn.addEventListener('click', () => zoom(ZOOM_STEP));
+    zoomOutBtn.addEventListener('click', () => zoom(-ZOOM_STEP));
+    zoomResetBtn.addEventListener('click', resetZoom);
+
+    // Mouse wheel zoom
+    container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        zoom(delta, e.clientX, e.clientY);
+    });
+
+    // Pan functionality
+    container.addEventListener('mousedown', (e) => {
+        if (scale > 1) {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            container.style.cursor = 'grabbing';
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        container.style.cursor = scale > 1 ? 'grab' : 'default';
+    });
+
+    // Touch support
+    let lastTouchDistance = 0;
+
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1 && scale > 1) {
+            isDragging = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+        } else if (e.touches.length === 2) {
+            lastTouchDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        }
+    });
+
+    container.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1 && isDragging) {
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            updateTransform();
+        } else if (e.touches.length === 2) {
+            const distance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            const delta = (distance - lastTouchDistance) * 0.01;
+            zoom(delta);
+            lastTouchDistance = distance;
+        }
+    });
+
+    container.addEventListener('touchend', () => {
+        isDragging = false;
+        lastTouchDistance = 0;
+    });
+
+    // Reset on modal close
+    modal.addEventListener('hidden.bs.modal', resetZoom);
+
+    // Double-click to zoom
+    container.addEventListener('dblclick', (e) => {
+        if (scale > 1) {
+            resetZoom();
+        } else {
+            zoom(1.5, e.clientX, e.clientY);
+        }
+    });
+})();
+{% endif %}
 </script>
 {% endblock %}
 {% endblock %}

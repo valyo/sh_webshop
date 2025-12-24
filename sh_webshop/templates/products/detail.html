@@ -120,18 +120,7 @@
                      id="zoomableImage">
             </div>
             <div class="modal-footer border-0 justify-content-center">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-light" id="zoomOut" title="Zooma ut">
-                        <i class="fas fa-search-minus"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-light" id="zoomReset" title="Återställ">
-                        <i class="fas fa-compress-arrows-alt"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-light" id="zoomIn" title="Zooma in">
-                        <i class="fas fa-search-plus"></i>
-                    </button>
-                </div>
-                <span class="text-white-50 ms-3 small">Använd scrollhjulet eller knapparna för att zooma. Dra för att panorera.</span>
+                <span class="text-white-50 small">Klicka för att zooma in/ut. Dra för att panorera när inzoomad.</span>
             </div>
         </div>
     </div>
@@ -168,12 +157,16 @@
 
 .zoom-container {
     overflow: hidden;
-    cursor: grab;
+    cursor: zoom-in;
     max-height: 70vh;
     background: #1a1a1a;
 }
 
-.zoom-container:active {
+.zoom-container.zoomed {
+    cursor: zoom-out;
+}
+
+.zoom-container.zoomed.dragging {
     cursor: grabbing;
 }
 
@@ -181,7 +174,7 @@
     max-width: 100%;
     max-height: 70vh;
     transform-origin: center center;
-    transition: transform 0.1s ease-out;
+    transition: transform 0.3s ease;
     user-select: none;
     -webkit-user-drag: none;
 }
@@ -213,67 +206,66 @@ function decrementQuantity(button) {
     const modal = document.getElementById('imageZoomModal');
     const image = document.getElementById('zoomableImage');
     const container = document.getElementById('zoomContainer');
-    const zoomInBtn = document.getElementById('zoomIn');
-    const zoomOutBtn = document.getElementById('zoomOut');
-    const zoomResetBtn = document.getElementById('zoomReset');
 
-    let scale = 1;
+    let isZoomed = false;
     let translateX = 0;
     let translateY = 0;
     let isDragging = false;
+    let hasDragged = false;
     let startX, startY;
 
-    const MIN_SCALE = 0.5;
-    const MAX_SCALE = 5;
-    const ZOOM_STEP = 0.3;
+    const MAX_SCALE = 3;
 
     function updateTransform() {
+        const scale = isZoomed ? MAX_SCALE : 1;
         image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        container.classList.toggle('zoomed', isZoomed);
     }
 
     function resetZoom() {
-        scale = 1;
+        isZoomed = false;
         translateX = 0;
         translateY = 0;
         updateTransform();
     }
 
-    function zoom(delta, centerX, centerY) {
-        const prevScale = scale;
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale + delta));
-
-        if (centerX !== undefined && centerY !== undefined) {
-            // Zoom towards the point
-            const rect = container.getBoundingClientRect();
-            const x = centerX - rect.left - rect.width / 2;
-            const y = centerY - rect.top - rect.height / 2;
-
-            translateX -= x * (scale - prevScale) / prevScale;
-            translateY -= y * (scale - prevScale) / prevScale;
+    function toggleZoom(e) {
+        if (hasDragged) {
+            hasDragged = false;
+            return;
         }
 
+        if (!isZoomed) {
+            // Zooming in - focus on clicked spot
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left - rect.width / 2;
+            const clickY = e.clientY - rect.top - rect.height / 2;
+
+            // Translate so clicked point becomes center
+            translateX = -clickX * (MAX_SCALE - 1);
+            translateY = -clickY * (MAX_SCALE - 1);
+            isZoomed = true;
+        } else {
+            // Zooming out - reset
+            translateX = 0;
+            translateY = 0;
+            isZoomed = false;
+        }
         updateTransform();
     }
 
-    // Button controls
-    zoomInBtn.addEventListener('click', () => zoom(ZOOM_STEP));
-    zoomOutBtn.addEventListener('click', () => zoom(-ZOOM_STEP));
-    zoomResetBtn.addEventListener('click', resetZoom);
+    // Click to toggle zoom
+    container.addEventListener('click', toggleZoom);
 
-    // Mouse wheel zoom
-    container.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-        zoom(delta, e.clientX, e.clientY);
-    });
-
-    // Pan functionality
+    // Pan functionality (mouse)
     container.addEventListener('mousedown', (e) => {
-        if (scale > 1) {
+        if (isZoomed) {
             isDragging = true;
+            hasDragged = false;
             startX = e.clientX - translateX;
             startY = e.clientY - translateY;
-            container.style.cursor = 'grabbing';
+            container.classList.add('dragging');
+            e.preventDefault();
         }
     });
 
@@ -281,64 +273,42 @@ function decrementQuantity(button) {
         if (isDragging) {
             translateX = e.clientX - startX;
             translateY = e.clientY - startY;
+            hasDragged = true;
             updateTransform();
         }
     });
 
     document.addEventListener('mouseup', () => {
         isDragging = false;
-        container.style.cursor = scale > 1 ? 'grab' : 'default';
+        container.classList.remove('dragging');
     });
 
     // Touch support
-    let lastTouchDistance = 0;
-
     container.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1 && scale > 1) {
+        if (e.touches.length === 1 && isZoomed) {
             isDragging = true;
+            hasDragged = false;
             startX = e.touches[0].clientX - translateX;
             startY = e.touches[0].clientY - translateY;
-        } else if (e.touches.length === 2) {
-            lastTouchDistance = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
         }
     });
 
     container.addEventListener('touchmove', (e) => {
-        e.preventDefault();
         if (e.touches.length === 1 && isDragging) {
+            e.preventDefault();
             translateX = e.touches[0].clientX - startX;
             translateY = e.touches[0].clientY - startY;
+            hasDragged = true;
             updateTransform();
-        } else if (e.touches.length === 2) {
-            const distance = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
-            const delta = (distance - lastTouchDistance) * 0.01;
-            zoom(delta);
-            lastTouchDistance = distance;
         }
     });
 
     container.addEventListener('touchend', () => {
         isDragging = false;
-        lastTouchDistance = 0;
     });
 
     // Reset on modal close
     modal.addEventListener('hidden.bs.modal', resetZoom);
-
-    // Double-click to zoom
-    container.addEventListener('dblclick', (e) => {
-        if (scale > 1) {
-            resetZoom();
-        } else {
-            zoom(1.5, e.clientX, e.clientY);
-        }
-    });
 })();
 {% endif %}
 </script>

@@ -9,6 +9,11 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///app.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # File upload configuration
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'products')
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
     # GitHub OAuth configuration
     GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")

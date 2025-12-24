@@ -10,9 +10,12 @@ from flask import (
 )
 from functools import wraps
 from requests_oauthlib import OAuth2Session
+from werkzeug.utils import secure_filename
 from .models import Admin, Category, Product
 from . import db
 import re
+import os
+import uuid
 
 admin = Blueprint("admin", __name__)
 
@@ -36,6 +39,53 @@ def slugify(text):
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[-\s]+", "-", text).strip("-")
     return text
+
+
+def allowed_file(filename):
+    """Check if the file extension is allowed."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config.get('ALLOWED_EXTENSIONS', {'png', 'jpg', 'jpeg', 'gif', 'webp'})
+
+
+def save_product_image(file):
+    """Save an uploaded product image and return the URL path."""
+    if file and file.filename and allowed_file(file.filename):
+        # Generate a unique filename to avoid collisions
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        
+        # Ensure upload folder exists
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        if not upload_folder:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'products')
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Save the file
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
+        
+        # Return the URL path for the image
+        return url_for('static', filename=f'uploads/products/{filename}')
+    return None
+
+
+def delete_product_image(image_url):
+    """Delete a product image file if it's a local upload."""
+    if image_url and '/static/uploads/products/' in image_url:
+        # Extract filename from URL
+        filename = image_url.split('/static/uploads/products/')[-1]
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
+        if not upload_folder:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'products')
+        filepath = os.path.join(upload_folder, filename)
+        
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+                return True
+            except OSError:
+                pass
+    return False
 
 
 @admin.route("/admin")
@@ -186,7 +236,6 @@ def create_product():
         price = request.form.get("price")
         stock = request.form.get("stock")
         category_id = request.form.get("category_id")
-        image_url = request.form.get("image_url")
         is_active = bool(request.form.get("is_active"))
 
         if not all([name, price, category_id]):
@@ -208,6 +257,16 @@ def create_product():
             flash("A product with this name already exists.", "error")
             return redirect(url_for("admin.create_product"))
 
+        # Handle image upload
+        image_url = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                image_url = save_product_image(file)
+                if not image_url:
+                    flash("Invalid image file. Please upload PNG, JPG, GIF, or WebP.", "error")
+                    return redirect(url_for("admin.create_product"))
+
         product = Product(
             name=name,
             slug=slug,
@@ -227,6 +286,9 @@ def create_product():
             return redirect(url_for("admin.products"))
         except Exception as e:
             db.session.rollback()
+            # Clean up uploaded image if database save fails
+            if image_url:
+                delete_product_image(image_url)
             flash("An error occurred while creating the product.", "error")
             current_app.logger.error(f"Error creating product: {str(e)}")
 
@@ -251,7 +313,7 @@ def edit_product(id):
         price = request.form.get("price")
         stock = request.form.get("stock")
         category_id = request.form.get("category_id")
-        image_url = request.form.get("image_url")
+        remove_image = request.form.get("remove_image")
         is_active = bool(request.form.get("is_active"))
 
         if not all([name, price, category_id]):
@@ -274,6 +336,27 @@ def edit_product(id):
             flash("A product with this name already exists.", "error")
             return redirect(url_for("admin.edit_product", id=id))
 
+        # Handle image removal
+        old_image_url = product.image_url
+        if remove_image:
+            delete_product_image(old_image_url)
+            product.image_url = None
+            old_image_url = None  # Don't delete again if new upload fails
+
+        # Handle new image upload
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                new_image_url = save_product_image(file)
+                if new_image_url:
+                    # Delete old image if it exists and is a local upload
+                    if old_image_url:
+                        delete_product_image(old_image_url)
+                    product.image_url = new_image_url
+                else:
+                    flash("Invalid image file. Please upload PNG, JPG, GIF, or WebP.", "error")
+                    return redirect(url_for("admin.edit_product", id=id))
+
         product.name = name
         product.slug = slug
         product.description = description
@@ -281,7 +364,6 @@ def edit_product(id):
         product.price = price
         product.stock = stock
         product.category_id = category_id
-        product.image_url = image_url
         product.is_active = is_active
 
         try:
@@ -307,10 +389,14 @@ def edit_product(id):
 @login_required
 def delete_product(id):
     product = Product.query.get_or_404(id)
+    image_url = product.image_url
 
     try:
         db.session.delete(product)
         db.session.commit()
+        # Delete the image file after successful database deletion
+        if image_url:
+            delete_product_image(image_url)
         flash("Product deleted successfully!", "success")
     except Exception as e:
         db.session.rollback()

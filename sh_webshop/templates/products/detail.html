@@ -265,9 +265,18 @@ function decrementQuantity(button) {
             return;
         }
 
+        // Check if click was on the image or outside
+        const clickedOnImage = e.target === image;
+
+        if (!clickedOnImage) {
+            // Clicked outside image - close modal
+            bootstrap.Modal.getInstance(modal).hide();
+            return;
+        }
+
         if (!isZoomed) {
             // Zooming in - focus on clicked spot
-            const rect = container.getBoundingClientRect();
+            const rect = image.getBoundingClientRect();
             const clickX = e.clientX - rect.left - rect.width / 2;
             const clickY = e.clientY - rect.top - rect.height / 2;
 
@@ -284,7 +293,7 @@ function decrementQuantity(button) {
         updateTransform();
     }
 
-    // Click to toggle zoom
+    // Click to toggle zoom or close
     container.addEventListener('click', toggleZoom);
 
     // Pan functionality (mouse)

@@ -6,14 +6,6 @@
 <div class="container mt-4">
     <h1 class="mb-4">{{ page_title }}</h1>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
     {% if cart_items %}
         <div class="card">
             <div class="card-body">

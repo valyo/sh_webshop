@@ -31,7 +31,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="name" class="form-label">Product Name</label>
                             <input type="text" 
@@ -102,13 +102,27 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="image_url" class="form-label">Image URL</label>
-                            <input type="url"
+                            <label for="image" class="form-label">Product Image</label>
+                            {% if product and product.image_url %}
+                                <div class="mb-2">
+                                    <img src="{{ product.image_url }}" 
+                                         alt="{{ product.name }}" 
+                                         class="img-thumbnail" 
+                                         style="max-height: 150px;">
+                                    <div class="form-check mt-2">
+                                        <input type="checkbox" class="form-check-input" id="remove_image" name="remove_image" value="1">
+                                        <label class="form-check-label text-danger" for="remove_image">
+                                            <i class="fas fa-trash"></i> Remove current image
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <input type="file"
                                    class="form-control" 
-                                   id="image_url" 
-                                   name="image_url" 
-                                   value="{{ request.form.image_url or product.image_url if product else '' }}">
-                            <div class="form-text">URL to the product image.</div>
+                                   id="image" 
+                                   name="image"
+                                   accept="image/png, image/jpeg, image/gif, image/webp">
+                            <div class="form-text">Upload a product image (PNG, JPG, GIF, WebP). Max 16MB.</div>
                         </div>
 
                         <div class="mb-3 form-check">

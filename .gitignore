@@ -45,4 +45,7 @@ instance/
 Thumbs.db
 
 # Docker
-.docker/ 
+.docker/
+
+# Static files
+sh_webshop/static/uploads/

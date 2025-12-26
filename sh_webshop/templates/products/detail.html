@@ -18,28 +18,37 @@
     <div class="row">
         <div class="col-md-6">
             {% if product.image_url %}
-                <img src="{{ product.image_url }}" 
-                     class="img-fluid rounded shadow" 
-                     alt="{{ product.name }}"
-                     style="max-height: 500px; width: 100%; object-fit: cover;">
+                <div class="position-relative product-image-container">
+                    <img src="{{ product.image_url }}"
+                         class="img-fluid rounded shadow product-image"
+                         alt="{{ product.name }}"
+                         style="max-height: 500px; width: 100%; object-fit: cover;">
+                    <button type="button"
+                            class="btn btn-light btn-zoom position-absolute"
+                            data-bs-toggle="modal"
+                            data-bs-target="#imageZoomModal"
+                            title="Förstora bild">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                </div>
             {% else %}
                 <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
                     <i class="fas fa-image fa-5x text-muted"></i>
                 </div>
             {% endif %}
         </div>
-        
+
         <div class="col-md-6">
             <h1 class="mb-3">{{ product.name }}</h1>
-            
+
             {% if product.category %}
                 <p class="text-muted mb-3">
                     <i class="fas fa-tag"></i> {{ product.category.name }}
                 </p>
             {% endif %}
-            
+
             <p class="lead mb-4">{{ product.description }}</p>
-            
+
             <div class="d-flex align-items-center mb-4">
                 <span class="h2 mb-0 me-3">{{ "%.2f"|format(product.price) }} SEK</span>
                 {% if product.stock > 0 %}
@@ -48,7 +57,7 @@
                     <span class="badge bg-danger fs-6">Slut i lager</span>
                 {% endif %}
             </div>
-            
+
             <div class="card mb-4">
                 <div class="card-body">
                     <form class="d-flex gap-3 align-items-center" method="POST" action="{{ url_for('cart.add_item') }}">
@@ -72,13 +81,13 @@
                     </form>
                 </div>
             </div>
-            
+
             <a href="{{ url_for('products.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Tillbaka till produkter
             </a>
         </div>
     </div>
-    
+
     {% if product.long_description %}
     <div class="row mt-5">
         <div class="col-12">
@@ -94,6 +103,113 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Image Zoom Modal -->
+{% if product.image_url %}
+<div class="modal fade" id="imageZoomModal" tabindex="-1" aria-labelledby="imageZoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-transparent">
+            <button type="button" class="btn-close-zoom" data-bs-dismiss="modal" aria-label="Stäng">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body p-0 d-flex align-items-center justify-content-center zoom-container" id="zoomContainer">
+                <img src="{{ product.image_url }}"
+                     alt="{{ product.name }}"
+                     class="zoomable-image"
+                     id="zoomableImage">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-image-container {
+    display: inline-block;
+    width: 100%;
+}
+
+.btn-zoom {
+    top: 10px;
+    right: 10px;
+    opacity: 0.8;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.btn-zoom:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-zoom i {
+    font-size: 1.1rem;
+}
+
+#imageZoomModal .modal-content {
+    border: none;
+    background: transparent;
+}
+
+#imageZoomModal .modal-backdrop {
+    background: rgba(255,255,255,0.9);
+}
+
+.btn-close-zoom {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-close-zoom:hover {
+    background: rgba(0,0,0,0.8);
+    transform: scale(1.1);
+}
+
+.zoom-container {
+    overflow: hidden;
+    cursor: zoom-in;
+    width: 100%;
+    height: 100vh;
+}
+
+.zoom-container.zoomed {
+    cursor: zoom-out;
+}
+
+.zoom-container.zoomed.dragging {
+    cursor: grabbing;
+}
+
+.zoomable-image {
+    max-width: 90vw;
+    max-height: 90vh;
+    transform-origin: center center;
+    transition: transform 0.3s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+</style>
+{% endif %}
 
 {% block scripts %}
 <script>
@@ -113,6 +229,127 @@ function decrementQuantity(button) {
         input.value = currentValue - 1;
     }
 }
+
+// Image zoom functionality
+{% if product.image_url %}
+(function() {
+    const modal = document.getElementById('imageZoomModal');
+    const image = document.getElementById('zoomableImage');
+    const container = document.getElementById('zoomContainer');
+
+    let isZoomed = false;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let hasDragged = false;
+    let startX, startY;
+
+    const MAX_SCALE = 3;
+
+    function updateTransform() {
+        const scale = isZoomed ? MAX_SCALE : 1;
+        image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        container.classList.toggle('zoomed', isZoomed);
+    }
+
+    function resetZoom() {
+        isZoomed = false;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+    }
+
+    function toggleZoom(e) {
+        if (hasDragged) {
+            hasDragged = false;
+            return;
+        }
+
+        // Check if click was on the image or outside
+        const clickedOnImage = e.target === image;
+
+        if (!clickedOnImage) {
+            // Clicked outside image - close modal
+            bootstrap.Modal.getInstance(modal).hide();
+            return;
+        }
+
+        if (!isZoomed) {
+            // Zooming in - focus on clicked spot
+            const rect = image.getBoundingClientRect();
+            const clickX = e.clientX - rect.left - rect.width / 2;
+            const clickY = e.clientY - rect.top - rect.height / 2;
+
+            // Translate so clicked point becomes center
+            translateX = -clickX * (MAX_SCALE - 1);
+            translateY = -clickY * (MAX_SCALE - 1);
+            isZoomed = true;
+        } else {
+            // Zooming out - reset
+            translateX = 0;
+            translateY = 0;
+            isZoomed = false;
+        }
+        updateTransform();
+    }
+
+    // Click to toggle zoom or close
+    container.addEventListener('click', toggleZoom);
+
+    // Pan functionality (mouse)
+    container.addEventListener('mousedown', (e) => {
+        if (isZoomed) {
+            isDragging = true;
+            hasDragged = false;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            container.classList.add('dragging');
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            hasDragged = true;
+            updateTransform();
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        container.classList.remove('dragging');
+    });
+
+    // Touch support
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1 && isZoomed) {
+            isDragging = true;
+            hasDragged = false;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+        }
+    });
+
+    container.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isDragging) {
+            e.preventDefault();
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            hasDragged = true;
+            updateTransform();
+        }
+    });
+
+    container.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+
+    // Reset on modal close
+    modal.addEventListener('hidden.bs.modal', resetZoom);
+})();
+{% endif %}
 </script>
 {% endblock %}
 {% endblock %}

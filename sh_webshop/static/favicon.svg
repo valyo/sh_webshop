@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="honey" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#b8860b"/>
+      <stop offset="50%" style="stop-color:#daa520"/>
+      <stop offset="100%" style="stop-color:#f4d03f"/>
+    </linearGradient>
+    <linearGradient id="lid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f0f0"/>
+      <stop offset="100%" style="stop-color:#c0c0c0"/>
+    </linearGradient>
+  </defs>
+  <!-- Jar body: rounded rect, wider at bottom -->
+  <path d="M8 10h1.5L11 7h10l1.5 3h1.5v16a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10z" 
+        fill="#fff" fill-opacity="0.25" stroke="#8ba3ad" stroke-width="0.9"/>
+  <!-- Honey inside jar -->
+  <path d="M9.8 11.2h12.4v14.6a1.2 1.2 0 0 1-1.2 1.2H11a1.2 1.2 0 0 1-1.2-1.2V11.2z" 
+        fill="url(#honey)"/>
+  <!-- Honey surface (curved top) -->
+  <ellipse cx="16" cy="11.8" rx="5.2" ry="0.8" fill="#c17f2a" opacity="0.7"/>
+  <!-- Metal lid -->
+  <rect x="8.5" y="6.5" width="15" height="3" rx="0.8" fill="url(#lid)" stroke="#9a9a9a" stroke-width="0.6"/>
+  <!-- Lid rim -->
+  <rect x="9.5" y="5.8" width="13" height="1" rx="0.4" fill="#e5e5e5" stroke="#aaa" stroke-width="0.4"/>
+  <!-- Subtle glass reflection -->
+  <path d="M12.5 13v12" stroke="#fff" stroke-width="1.2" opacity="0.35"/>
+</svg>

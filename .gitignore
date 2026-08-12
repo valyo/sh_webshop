@@ -33,6 +33,7 @@ ENV/
 
 # Flask
 instance/
+data/
 .webassets-cache
 *.db
 

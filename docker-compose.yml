@@ -6,7 +6,10 @@ services:
       - "8088:5000"
     volumes:
       - .:/app
+      # SQLite + product images; survives image rebuilds (host path = bind mount).
+      - ./data:/data
     env_file:
       - .env
     environment:
       - FLASK_APP=main.py
+      - SHOP_DATA_DIR=/data

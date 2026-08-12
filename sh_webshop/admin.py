@@ -64,24 +64,40 @@ def save_product_image(file):
         filepath = os.path.join(upload_folder, filename)
         file.save(filepath)
         
-        # Return the URL path for the image
-        return url_for('static', filename=f'uploads/products/{filename}')
+        return url_for("uploads.serve_product", filename=filename)
+    return None
+
+
+def _product_image_filename_from_url(image_url):
+    """Return basename for a locally stored product image URL, or None."""
+    if not image_url:
+        return None
+    for marker in ("/uploads/products/", "/static/uploads/products/"):
+        if marker in image_url:
+            name = image_url.split(marker)[-1].split("?", 1)[0]
+            if name and name == os.path.basename(name) and ".." not in name:
+                return name
     return None
 
 
 def delete_product_image(image_url):
     """Delete a product image file if it's a local upload."""
-    if image_url and '/static/uploads/products/' in image_url:
-        # Extract filename from URL
-        filename = image_url.split('/static/uploads/products/')[-1]
-        upload_folder = current_app.config.get('UPLOAD_FOLDER')
-        if not upload_folder:
-            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'products')
-        filepath = os.path.join(upload_folder, filename)
-        
-        if os.path.exists(filepath):
+    filename = _product_image_filename_from_url(image_url)
+    if not filename:
+        return False
+    upload_folder = current_app.config.get("UPLOAD_FOLDER")
+    if not upload_folder:
+        upload_folder = os.path.join(
+            current_app.root_path, "static", "uploads", "products"
+        )
+    filepath = os.path.join(upload_folder, filename)
+    legacy_path = os.path.join(
+        current_app.root_path, "static", "uploads", "products", filename
+    )
+    for path in (filepath, legacy_path):
+        if os.path.exists(path):
             try:
-                os.remove(filepath)
+                os.remove(path)
                 return True
             except OSError:
                 pass

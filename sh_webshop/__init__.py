@@ -38,6 +38,9 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    os.makedirs(app.config["SHOP_DATA_DIR"], exist_ok=True)
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
     # Initialize database and migrations
     db.init_app(app)
     migrate.init_app(app, db)
@@ -63,6 +66,7 @@ def create_app(config_class=Config):
     from .products import products
     from .about import about
     from .cart import cart
+    from .uploads import uploads_bp
 
     app.register_blueprint(main)
     app.register_blueprint(biodling)
@@ -71,6 +75,7 @@ def create_app(config_class=Config):
     app.register_blueprint(products)
     app.register_blueprint(about)
     app.register_blueprint(cart)
+    app.register_blueprint(uploads_bp)
 
     # Add template context processor
     @app.context_processor

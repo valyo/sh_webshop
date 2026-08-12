@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth2Session
+from werkzeug.middleware.proxy_fix import ProxyFix
 from .config import Config
 
 # Load environment variables from .env file
@@ -37,6 +38,11 @@ def get_cart_count():
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # Trust X-Forwarded-Proto/Host from the reverse proxy (nginx_proxy_manager)
+    # so url_for(_external=True) builds https:// URLs (needed for the GitHub
+    # OAuth redirect_uri to match what's registered on the OAuth App).
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     os.makedirs(app.config["SHOP_DATA_DIR"], exist_ok=True)
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)

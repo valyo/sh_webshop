@@ -85,24 +85,22 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    {% if request.blueprint == 'admin' %}
-                        {% if session.get('user') %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <img src="{{ session.get('user').avatar_url }}" alt="Profile" class="rounded-circle" style="width: 24px; height: 24px;">
-                                    {{ session.get('user').username }}
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">Logout</a></li>
-                                </ul>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin.login') }}">Login</a>
-                            </li>
-                        {% endif %}
+                    {% if session.get('user') %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <img src="{{ session.get('user').avatar_url }}" alt="Profile" class="rounded-circle" style="width: 24px; height: 24px;">
+                                {{ session.get('user').username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% elif request.blueprint == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.login') }}">Login</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>

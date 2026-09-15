@@ -11,7 +11,7 @@ from flask import (
 from functools import wraps
 from requests_oauthlib import OAuth2Session
 from werkzeug.utils import secure_filename
-from .models import Admin, Category, Product
+from .models import Admin, AboutSection, Category, Product
 from . import db
 import re
 import os
@@ -93,6 +93,59 @@ def delete_product_image(image_url):
     filepath = os.path.join(upload_folder, filename)
     legacy_path = os.path.join(
         current_app.root_path, "static", "uploads", "products", filename
+    )
+    for path in (filepath, legacy_path):
+        if os.path.exists(path):
+            try:
+                os.remove(path)
+                return True
+            except OSError:
+                pass
+    return False
+
+
+def save_about_image(file):
+    """Save an uploaded about-section image and return the URL path."""
+    if file and file.filename and allowed_file(file.filename):
+        ext = file.filename.rsplit(".", 1)[1].lower()
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        upload_folder = current_app.config.get("ABOUT_UPLOAD_FOLDER")
+        if not upload_folder:
+            upload_folder = os.path.join(
+                current_app.root_path, "static", "uploads", "about"
+            )
+        os.makedirs(upload_folder, exist_ok=True)
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
+        return url_for("uploads.serve_about", filename=filename)
+    return None
+
+
+def _about_image_filename_from_url(image_url):
+    """Return basename for a locally stored about image URL, or None."""
+    if not image_url:
+        return None
+    for marker in ("/uploads/about/", "/static/uploads/about/"):
+        if marker in image_url:
+            name = image_url.split(marker)[-1].split("?", 1)[0]
+            if name and name == os.path.basename(name) and ".." not in name:
+                return name
+    return None
+
+
+def delete_about_image(image_url):
+    """Delete an about-section image file if it's a local upload."""
+    filename = _about_image_filename_from_url(image_url)
+    if not filename:
+        return False
+    upload_folder = current_app.config.get("ABOUT_UPLOAD_FOLDER")
+    if not upload_folder:
+        upload_folder = os.path.join(
+            current_app.root_path, "static", "uploads", "about"
+        )
+    filepath = os.path.join(upload_folder, filename)
+    legacy_path = os.path.join(
+        current_app.root_path, "static", "uploads", "about", filename
     )
     for path in (filepath, legacy_path):
         if os.path.exists(path):
@@ -420,6 +473,163 @@ def delete_product(id):
         current_app.logger.error(f"Error deleting product: {str(e)}")
 
     return redirect(url_for("admin.products"))
+
+
+@admin.route("/admin/about")
+@login_required
+def about_sections():
+    sections = AboutSection.query.order_by(
+        AboutSection.sort_order, AboutSection.id
+    ).all()
+    return render_template(
+        "admin/about/list.html",
+        user=session.get("user"),
+        sections=sections,
+        page_title="Manage About Page",
+    )
+
+
+@admin.route("/admin/about/create", methods=["GET", "POST"])
+@login_required
+def create_about_section():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        content = request.form.get("content", "").strip()
+        sort_order = request.form.get("sort_order")
+        is_active = bool(request.form.get("is_active"))
+
+        if not title:
+            flash("Title is required.", "error")
+            return redirect(url_for("admin.create_about_section"))
+
+        try:
+            sort_order = int(sort_order) if sort_order not in (None, "") else 0
+        except ValueError:
+            flash("Sort order must be a valid number.", "error")
+            return redirect(url_for("admin.create_about_section"))
+
+        image_url = None
+        if "image" in request.files:
+            file = request.files["image"]
+            if file and file.filename:
+                image_url = save_about_image(file)
+                if not image_url:
+                    flash(
+                        "Invalid image file. Please upload PNG, JPG, GIF, or WebP.",
+                        "error",
+                    )
+                    return redirect(url_for("admin.create_about_section"))
+
+        section = AboutSection(
+            title=title,
+            content=content,
+            image_url=image_url,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+
+        try:
+            db.session.add(section)
+            db.session.commit()
+            flash("About section created successfully!", "success")
+            return redirect(url_for("admin.about_sections"))
+        except Exception as e:
+            db.session.rollback()
+            if image_url:
+                delete_about_image(image_url)
+            flash("An error occurred while creating the about section.", "error")
+            current_app.logger.error(f"Error creating about section: {str(e)}")
+
+    return render_template(
+        "admin/about/create.html",
+        user=session.get("user"),
+        page_title="Create About Section",
+    )
+
+
+@admin.route("/admin/about/<int:id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_about_section(id):
+    section = AboutSection.query.get_or_404(id)
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        content = request.form.get("content", "").strip()
+        sort_order = request.form.get("sort_order")
+        remove_image = request.form.get("remove_image")
+        is_active = bool(request.form.get("is_active"))
+
+        if not title:
+            flash("Title is required.", "error")
+            return redirect(url_for("admin.edit_about_section", id=id))
+
+        try:
+            sort_order = int(sort_order) if sort_order not in (None, "") else 0
+        except ValueError:
+            flash("Sort order must be a valid number.", "error")
+            return redirect(url_for("admin.edit_about_section", id=id))
+
+        old_image_url = section.image_url
+        if remove_image:
+            delete_about_image(old_image_url)
+            section.image_url = None
+            old_image_url = None
+
+        if "image" in request.files:
+            file = request.files["image"]
+            if file and file.filename:
+                new_image_url = save_about_image(file)
+                if new_image_url:
+                    if old_image_url:
+                        delete_about_image(old_image_url)
+                    section.image_url = new_image_url
+                else:
+                    flash(
+                        "Invalid image file. Please upload PNG, JPG, GIF, or WebP.",
+                        "error",
+                    )
+                    return redirect(url_for("admin.edit_about_section", id=id))
+
+        section.title = title
+        section.content = content
+        section.sort_order = sort_order
+        section.is_active = is_active
+
+        try:
+            db.session.commit()
+            flash("About section updated successfully!", "success")
+            return redirect(url_for("admin.about_sections"))
+        except Exception as e:
+            db.session.rollback()
+            flash("An error occurred while updating the about section.", "error")
+            current_app.logger.error(f"Error updating about section: {str(e)}")
+
+    return render_template(
+        "admin/about/edit.html",
+        user=session.get("user"),
+        section=section,
+        page_title="Edit About Section",
+    )
+
+
+@admin.route("/admin/about/<int:id>/delete", methods=["POST"])
+@login_required
+def delete_about_section(id):
+    section = AboutSection.query.get_or_404(id)
+    image_url = section.image_url
+
+    try:
+        db.session.delete(section)
+        db.session.commit()
+        if image_url:
+            delete_about_image(image_url)
+        flash("About section deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("An error occurred while deleting the about section.", "error")
+        current_app.logger.error(f"Error deleting about section: {str(e)}")
+
+    return redirect(url_for("admin.about_sections"))
 
 
 @admin.route("/login")

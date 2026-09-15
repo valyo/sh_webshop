@@ -111,3 +111,19 @@ class OrderItem(db.Model):
 
     def __repr__(self):
         return f"<OrderItem {self.id}>"
+
+
+class AboutSection(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text)
+    image_url = db.Column(db.String(200))
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    def __repr__(self):
+        return f"<AboutSection {self.title}>"

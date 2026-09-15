@@ -46,6 +46,7 @@ def create_app(config_class=Config):
 
     os.makedirs(app.config["SHOP_DATA_DIR"], exist_ok=True)
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    os.makedirs(app.config["ABOUT_UPLOAD_FOLDER"], exist_ok=True)
 
     # Initialize database and migrations
     db.init_app(app)
@@ -53,6 +54,9 @@ def create_app(config_class=Config):
 
     # Create database tables
     with app.app_context():
+        # Ensure all models are registered before create_all
+        from .models import AboutSection, Category, Product  # noqa: F401
+
         db.create_all()
         print("Database tables created successfully!")
 

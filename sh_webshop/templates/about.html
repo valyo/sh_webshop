@@ -6,32 +6,34 @@
 <div class="row">
     <div class="col-12">
         <h1 class="mb-4">{{ page_title }}</h1>
-        
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Vår historia</h5>
-                <p class="card-text">Solberg Honung är ett familjeföretag som har drivit biodling och lammavel i flera generationer. Vi kombinerar traditionell kunskap med moderna metoder för att producera högkvalitativa produkter.</p>
-            </div>
-        </div>
 
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Vårt uppdrag</h5>
-                <p class="card-text">Vi strävar efter att producera ekologiska och hållbara produkter samtidigt som vi tar hand om våra bin och lamm. Vår filosofi bygger på respekt för naturen och djuren.</p>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Kontakta oss</h5>
-                <p class="card-text">
-                    Solberg Honung<br>
-                    Adress: [Din adress]<br>
-                    Telefon: [Ditt telefonnummer]<br>
-                    E-post: [Din e-post]
-                </p>
-            </div>
-        </div>
+        {% if sections %}
+            {% for section in sections %}
+                <div class="card{% if not loop.first %} mt-4{% endif %}">
+                    <div class="card-body">
+                        <div class="row align-items-start g-3">
+                            {% if section.image_url %}
+                                <div class="col-md-4">
+                                    <img src="{{ section.image_url }}"
+                                         alt="{{ section.title }}"
+                                         class="img-fluid rounded">
+                                </div>
+                                <div class="col-md-8">
+                            {% else %}
+                                <div class="col-12">
+                            {% endif %}
+                                    <h5 class="card-title">{{ section.title }}</h5>
+                                    {% if section.content %}
+                                        <p class="card-text" style="white-space: pre-line;">{{ section.content }}</p>
+                                    {% endif %}
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">Innehåll kommer snart.</p>
+        {% endif %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

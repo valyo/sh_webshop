@@ -37,6 +37,7 @@ class Config:
 
     # File upload configuration (under SHOP_DATA_DIR, not under package static/)
     UPLOAD_FOLDER = os.path.join(SHOP_DATA_DIR, "uploads", "products")
+    ABOUT_UPLOAD_FOLDER = os.path.join(SHOP_DATA_DIR, "uploads", "about")
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
